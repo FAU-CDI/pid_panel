@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Dashboard | QuickPID
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+    <h1>Dashboard</h1>
+
+    <p>
+        Welcome, <strong>{{ user.username }}</strong>.
+    </p>
+
+    <div class="menu-grid">
+
+        <a href="{% url 'namespace_list' %}" class="menu-card">
+            <h3>Namespaces</h3>
+            <p>View and manage namespaces.</p>
+            
+        </a>
+        
+
+        <a href="{% url 'namespace_list' %}" class="menu-card">
+            <h3>Create Namespace</h3>
+            <p>Create a new namespace.</p>
+        </a>
+
+        <a href="#" class="menu-card">
+            <h3>PIDs</h3>
+            <p>Browse existing PIDs.</p>
+        </a>
+
+        <a href="#" class="menu-card">
+            <h3>Create PID</h3>
+            <p>Create a new persistent identifier.</p>
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

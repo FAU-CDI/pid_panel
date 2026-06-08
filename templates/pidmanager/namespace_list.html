@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="card">
+
+    <h1>Namespaces</h1>
+
+    <br>
+
+    <a href="{% url 'namespace_create' %}">
+        Create Namespace
+    </a>
+
+    <br><br>
+
+    <table border="1" cellpadding="10">
+
+        <tr>
+            <th>ID</th>
+            <th>Tag</th>
+            <th>Created</th>
+        </tr>
+
+        {% for ns in namespaces %}
+
+        <tr>
+
+            <td>{{ ns.id }}</td>
+
+            <td>
+                {{ ns.tag }}
+            </td>
+
+            <td>
+                {{ ns.date_created }}
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+</div>
+
+{% endblock %}
