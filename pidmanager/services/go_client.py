@@ -36,3 +36,72 @@ def create_namespace(
     response.raise_for_status()
 
     return response.json()
+
+def create_pid(
+    namespace_id,
+    url,
+    metadata,
+    tag
+):
+
+    payload = {
+        "url": url,
+        "metadata": metadata,
+        "tag": tag
+    }
+
+    response = requests.post(
+        f"{BASE_URL}/api/v2/resolver/namespaces/{namespace_id}/resources",
+        json=payload
+    )
+
+    response.raise_for_status()
+
+    return response.json()
+
+
+def list_pids(namespace_id):
+
+    response = requests.get(
+        f"{BASE_URL}/api/v2/resolver/namespaces/{namespace_id}/resources"
+    )
+
+    response.raise_for_status()
+
+    return response.json()
+
+def update_pid(
+    namespace_id,
+    pid,
+    url,
+    metadata,
+    tag,
+    deleted
+):
+
+    payload = {
+        "url": url,
+        "metadata": metadata,
+        "tag": tag,
+        "deleted": deleted
+    }
+
+    response = requests.patch(
+        f"{BASE_URL}/api/v2/resolver/namespaces/{namespace_id}/resources/{pid}",
+        json=payload
+    )
+
+    response.raise_for_status()
+
+    return response.json()
+def get_pid(
+    namespace_id,
+    pid
+):
+    response = requests.get(
+        f"{BASE_URL}/api/v2/resolver/namespaces/{namespace_id}/resources/{pid}"
+    )
+
+    response.raise_for_status()
+
+    return response.json()

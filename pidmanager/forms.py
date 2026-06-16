@@ -17,3 +17,22 @@ class NamespaceCreateForm(forms.Form):
             ("full", "Full"),
         ]
     )
+
+class PIDCreateForm(forms.Form):
+
+    namespace_id = forms.ChoiceField()
+
+    url = forms.URLField()
+
+    metadata = forms.CharField(
+        widget=forms.Textarea
+    )
+
+    tag = forms.CharField()
+
+
+class PIDEditForm(forms.Form):
+
+    metadata = forms.CharField(
+        widget=forms.Textarea
+    )

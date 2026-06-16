@@ -28,14 +28,19 @@ Dashboard | QuickPID
             <p>Create a new namespace.</p>
         </a>
 
-        <a href="#" class="menu-card">
+        <a href="{% url 'pid_namespaces' %}" class="menu-card">
             <h3>PIDs</h3>
             <p>Browse existing PIDs.</p>
         </a>
 
-        <a href="#" class="menu-card">
+        <a href="{% url 'pid_create' %}" class="menu-card">
             <h3>Create PID</h3>
             <p>Create a new persistent identifier.</p>
+        </a>
+
+        <a href="{% url 'resolve_pid' %}" class="menu-card">
+            <h3>Resolve PID</h3>
+            <p>Lookup a PID and view its details.</p>
         </a>
 
     </div>

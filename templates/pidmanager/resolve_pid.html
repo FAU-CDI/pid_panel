@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="card">
+
+    <h1>Resolve PID</h1>
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        <p>
+            Namespace ID
+        </p>
+
+        <input
+            type="text"
+            name="namespace_id"
+            required
+        >
+
+        <p>
+            PID
+        </p>
+
+        <input
+            type="text"
+            name="pid"
+            required
+        >
+
+        <br><br>
+
+        <button type="submit">
+            Resolve
+        </button>
+
+    </form>
+
+</div>
+
+{% if pid_data %}
+
+<div class="card">
+
+    <h2>PID Details</h2>
+
+    <table>
+
+        <tr>
+            <td><strong>PID</strong></td>
+            <td>{{ pid_data.pid }}</td>
+        </tr>
+
+        <tr>
+            <td><strong>URL</strong></td>
+            <td>{{ pid_data.url }}</td>
+        </tr>
+
+        <tr>
+            <td><strong>Metadata</strong></td>
+            <td>{{ pid_data.metadata }}</td>
+        </tr>
+
+        <tr>
+            <td><strong>Tag</strong></td>
+            <td>{{ pid_data.tag }}</td>
+        </tr>
+
+        <tr>
+            <td><strong>Created</strong></td>
+            <td>{{ pid_data.date_created }}</td>
+        </tr>
+
+        <tr>
+            <td><strong>Updated</strong></td>
+            <td>{{ pid_data.date_updated }}</td>
+        </tr>
+
+    </table>
+
+</div>
+
+{% endif %}
+
+{% if error %}
+
+<div class="card">
+
+    {{ error }}
+
+</div>
+
+{% endif %}
+
+{% endblock %}
