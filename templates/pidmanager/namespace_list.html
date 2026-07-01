@@ -42,6 +42,14 @@
 
     </table>
 
+    {% if previous_offset != None %}
+    <a href="?offset={{ previous_offset }}">Previous</a>
+    {% endif %}
+    
+    {% if next_offset != None %}
+    <a href="?offset={{ next_offset }}">Next</a>
+    {% endif %}
+
 </div>
 
 {% endblock %}

@@ -3,10 +3,14 @@ import requests
 BASE_URL = "http://127.0.0.1:8080"
 
 
-def list_namespaces():
+def list_namespaces(limit=3, offset=0):
 
     response = requests.get(
-        f"{BASE_URL}/api/v2/resolver/namespaces"
+        f"{BASE_URL}/api/v2/resolver/namespaces",
+        params={
+            "limit": limit,
+            "offset": offset,
+        }
     )
 
     response.raise_for_status()
@@ -60,10 +64,14 @@ def create_pid(
     return response.json()
 
 
-def list_pids(namespace_id):
+def list_pids(namespace_id, limit=3, offset=0):
 
     response = requests.get(
-        f"{BASE_URL}/api/v2/resolver/namespaces/{namespace_id}/resources"
+        f"{BASE_URL}/api/v2/resolver/namespaces/{namespace_id}/resources",
+        params={
+            "limit": limit,
+            "offset": offset,
+        }
     )
 
     response.raise_for_status()

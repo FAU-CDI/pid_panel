@@ -4,6 +4,7 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
+from urllib3 import request
 
 from .models import NamespacePermission
 from .forms import (
@@ -19,28 +20,59 @@ from .services.go_client import (
     get_pid
 )
 
-
 @login_required
 def namespace_list(request):
-    data = list_namespaces()
+    limit = 3
 
-    allowed_namespaces = []
+    offset = int(
+        request.GET.get(
+            "offset",
+            0
+        )
+    )
 
-    for ns in data["items"]:
+    data = list_namespaces(
+        limit=limit,
+        offset=offset
+    )
+    next_offset = None
 
-        if NamespacePermission.has_permission(
-            request.user,
-            ns["tag"],
-            "read"
-        ):
-            allowed_namespaces.append(ns)
+    if offset + limit < data["total"]:
+        next_offset = offset + limit
+
+    previous_offset = None
+
+    if offset > 0:
+        previous_offset = max(
+            0,
+            offset-limit
+        )
+
+    user_namespaces = set(
+        NamespacePermission.objects.filter(
+            user=request.user
+        ).values_list(
+            "namespace",
+            flat=True
+        )
+    )
+
+    allowed_namespaces = [
+        ns
+        for ns in data["items"]
+        if ns["tag"] in user_namespaces
+    ]
 
     return render(
         request,
         "pidmanager/namespace_list.html",
         {
-            "namespaces": allowed_namespaces
-        }
+            "namespaces": allowed_namespaces,
+
+            "next_offset": next_offset,
+
+            "previous_offset": previous_offset,
+        }   
     )
 
 
@@ -61,9 +93,10 @@ def namespace_create(request):
                 characters=form.cleaned_data["characters"]
             )
 
-            NamespacePermission.grant_all_permissions(
+            NamespacePermission.grant_role(
                 request.user,
-                namespace_data["tag"]
+                namespace_data["tag"],
+                "manager"
             )
 
             return redirect(
@@ -197,7 +230,33 @@ def pid_list(request, namespace_id):
             "You do not have permission."
         )
 
-    data = list_pids(namespace_id)
+    limit = 13
+
+    offset = int(
+        request.GET.get(
+            "offset",
+            0
+        )
+    )
+
+    data = list_pids(
+        namespace_id,
+        limit=limit,
+        offset=offset
+    )
+
+    next_offset = None
+
+    if offset + limit < data["total"]:
+        next_offset = offset + limit
+
+    previous_offset = None
+
+    if offset > 0:
+        previous_offset = max(
+            0,
+            offset-limit
+        )
 
     visible_pids = [
         pid
@@ -208,7 +267,7 @@ def pid_list(request, namespace_id):
     can_update = NamespacePermission.has_permission(
         request.user,
         namespace["tag"],
-        "update"
+        "update/delete"
     )
 
     return render(
@@ -218,6 +277,8 @@ def pid_list(request, namespace_id):
             "namespace": namespace,
             "pids": visible_pids,
             "can_update": can_update,
+            "next_offset": next_offset,
+            "previous_offset": previous_offset,
         }
     )
 
@@ -243,7 +304,7 @@ def pid_edit(
     if not NamespacePermission.has_permission(
         request.user,
         namespace["tag"],
-        "update"
+        "update/delete"
     ):
         return HttpResponseForbidden(
             "Permission denied"
@@ -328,7 +389,7 @@ def pid_delete(
     if not NamespacePermission.has_permission(
         request.user,
         namespace["tag"],
-        "update"
+        "update/delete"
     ):
         return HttpResponseForbidden(
             "Permission denied"
