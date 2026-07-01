@@ -4,7 +4,7 @@
 
 QuickPID Django is a web application built using Django that provides a user-friendly interface for interacting with the QuickPID Go backend. 
 The Go service is responsible for creating and managing Persistent Identifiers (PIDs), while this Django application handles user authentication,
-authorization, permission management, and exposes both a web interface and REST APIs for future frontend integration.
+authorization, permission management, and exposes both a web interface and REST APIs for frontend integration.
 
 ## Features Implemented
 
@@ -19,9 +19,8 @@ authorization, permission management, and exposes both a web interface and REST 
 
 * List namespaces accessible to the logged-in user.
 * Create new namespaces.
-* Automatically grant the creator all permissions on newly created namespaces:
+* Automatically grant the creator all permissions (Manager role) on newly created namespaces:
 
-  * Read
   * Create
   * Update/Delete
   * Mount
@@ -32,10 +31,10 @@ authorization, permission management, and exposes both a web interface and REST 
 
 * Create PIDs within namespaces.
 * List PIDs for namespaces where the user has List permission.
-* Read PID details (public endpoint).
+* Read PID details for a specific PID (public endpoint).
 * Update PID metadata.
-* Soft delete PIDs (internally marks the PID as deleted in the Go backend).
-* Deleted PIDs are hidden from the user interface.
+* Soft delete PIDs (internally marks PID delete flag as TRUE in the Go backend).
+* Deleted PIDs are hidden from the user interface (410 HTTP Gone error).
   
 ## REST API
 
@@ -113,7 +112,6 @@ Permissions are enforced based on the authenticated user's role within each name
 * Django
 * Django REST Framework
 * SQLite
-* Go Backend (accessed through REST APIs)
 
 ## Project Structure
 
