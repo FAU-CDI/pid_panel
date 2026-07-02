@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 
 
 class NamespacePermission(models.Model):
-
     ROLE_CHOICES = [
         ("viewer", "Viewer"),
         ("contributor", "Contributor"),
@@ -12,46 +11,37 @@ class NamespacePermission(models.Model):
     ]
 
     ROLE_PERMISSIONS = {
-    "viewer": [
-        "list",
-    ],
-    "contributor": [
-        "list",
-        "create",
-    ],
-    "editor": [
-        "list",
-        "create",
-        "update/delete",
-    ],
-    "manager": [
-        "list",
-        "create",
-        "update/delete",
-        "mount",
-        "manage_permissions",
-    ],
-}
+        "viewer": [
+            "list",
+        ],
+        "contributor": [
+            "list",
+            "create",
+        ],
+        "editor": [
+            "list",
+            "create",
+            "update/delete",
+        ],
+        "manager": [
+            "list",
+            "create",
+            "update/delete",
+            "mount",
+            "manage_permissions",
+        ],
+    }
 
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE
-    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    namespace = models.CharField(
-        max_length=255
-    )
+    namespace = models.CharField(max_length=255)
 
-    role = models.CharField(
-        max_length=20,
-        choices=ROLE_CHOICES
-    )
-    
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["user", "namespace"],
-                name="unique_user_namespace"
+                fields=["user", "namespace"], name="unique_user_namespace"
             )
         ]
 
@@ -60,19 +50,16 @@ class NamespacePermission(models.Model):
 
         if user.is_superuser:
             return True
-    
+
         assignment = NamespacePermission.objects.filter(
-            user=user,
-            namespace=namespace
+            user=user, namespace=namespace
         ).first()
-    
+
         if assignment is None:
             return False
-    
-        return permission in NamespacePermission.ROLE_PERMISSIONS[
-            assignment.role
-        ]
-    
+
+        return permission in NamespacePermission.ROLE_PERMISSIONS[assignment.role]
+
     @staticmethod
     def grant_role(user, namespace, role):
 
@@ -85,10 +72,7 @@ class NamespacePermission(models.Model):
     @staticmethod
     def revoke_role(user, namespace):
 
-        NamespacePermission.objects.filter(
-            user=user,
-            namespace=namespace
-        ).delete()
+        NamespacePermission.objects.filter(user=user, namespace=namespace).delete()
 
     @staticmethod
     def set_role(user, namespace, role):
@@ -100,9 +84,4 @@ class NamespacePermission(models.Model):
         )
 
     def __str__(self):
-        return (
-            f"{self.user.username} | "
-            f"{self.namespace} | "
-            f"{self.role}"
-        )
-
+        return f"{self.user.username} | {self.namespace} | {self.role}"

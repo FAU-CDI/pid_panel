@@ -1,10 +1,8 @@
-from multiprocessing.managers import Namespace
 
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
-from urllib3 import request
 
 from .models import NamespacePermission
 from .forms import (
@@ -17,24 +15,17 @@ from .services.go_client import (
     create_pid,
     list_pids,
     update_pid,
-    get_pid
+    get_pid,
 )
+
 
 @login_required
 def namespace_list(request):
     limit = 3
 
-    offset = int(
-        request.GET.get(
-            "offset",
-            0
-        )
-    )
+    offset = int(request.GET.get("offset", 0))
 
-    data = list_namespaces(
-        limit=limit,
-        offset=offset
-    )
+    data = list_namespaces(limit=limit, offset=offset)
     next_offset = None
 
     if offset + limit < data["total"]:
@@ -43,36 +34,24 @@ def namespace_list(request):
     previous_offset = None
 
     if offset > 0:
-        previous_offset = max(
-            0,
-            offset-limit
-        )
+        previous_offset = max(0, offset - limit)
 
     user_namespaces = set(
-        NamespacePermission.objects.filter(
-            user=request.user
-        ).values_list(
-            "namespace",
-            flat=True
+        NamespacePermission.objects.filter(user=request.user).values_list(
+            "namespace", flat=True
         )
     )
 
-    allowed_namespaces = [
-        ns
-        for ns in data["items"]
-        if ns["tag"] in user_namespaces
-    ]
+    allowed_namespaces = [ns for ns in data["items"] if ns["tag"] in user_namespaces]
 
     return render(
         request,
         "pidmanager/namespace_list.html",
         {
             "namespaces": allowed_namespaces,
-
             "next_offset": next_offset,
-
             "previous_offset": previous_offset,
-        }   
+        },
     )
 
 
@@ -80,40 +59,25 @@ def namespace_list(request):
 def namespace_create(request):
 
     if request.method == "POST":
-
-        form = NamespaceCreateForm(
-            request.POST
-        )
+        form = NamespaceCreateForm(request.POST)
 
         if form.is_valid():
-
-            namespace_data=create_namespace(
+            namespace_data = create_namespace(
                 tag=form.cleaned_data["tag"],
                 pattern=form.cleaned_data["pattern"],
-                characters=form.cleaned_data["characters"]
+                characters=form.cleaned_data["characters"],
             )
 
             NamespacePermission.grant_role(
-                request.user,
-                namespace_data["tag"],
-                "manager"
+                request.user, namespace_data["tag"], "manager"
             )
 
-            return redirect(
-                "namespace_list"
-            )
+            return redirect("namespace_list")
 
     else:
-
         form = NamespaceCreateForm()
 
-    return render(
-        request,
-        "pidmanager/namespace_create.html",
-        {
-            "form": form
-        }
-    )
+    return render(request, "pidmanager/namespace_create.html", {"form": form})
 
 
 @login_required
@@ -124,43 +88,23 @@ def pid_create(request):
     allowed_namespaces = []
 
     for ns in data["items"]:
-
-        if NamespacePermission.has_permission(
-            request.user,
-            ns["tag"],
-            "create"
-        ):
+        if NamespacePermission.has_permission(request.user, ns["tag"], "create"):
             allowed_namespaces.append(ns)
 
     if request.method == "POST":
-
         namespace_id = request.POST["namespace_id"]
         url = request.POST["url"]
         metadata = request.POST["metadata"]
         tag = request.POST["tag"]
 
-        result = create_pid(
-            namespace_id,
-            url,
-            metadata,
-            tag
-        )
+        result = create_pid(namespace_id, url, metadata, tag)
 
-        return render(
-            request,
-            "pidmanager/pid_created.html",
-            {
-                "pid": result
-            }
-        )
+        return render(request, "pidmanager/pid_created.html", {"pid": result})
 
     return render(
-        request,
-        "pidmanager/create_pid.html",
-        {
-            "namespaces": allowed_namespaces
-        }
+        request, "pidmanager/create_pid.html", {"namespaces": allowed_namespaces}
     )
+
 
 @login_required
 def pid_namespaces(request):
@@ -175,19 +119,9 @@ def pid_namespaces(request):
     allowed_namespaces = []
 
     for ns in data["items"]:
+        has_perm = NamespacePermission.has_permission(request.user, ns["tag"], "list")
 
-        has_perm = NamespacePermission.has_permission(
-            request.user,
-            ns["tag"],
-            "list"
-        )
-
-        print(
-            "Namespace:",
-            ns["tag"],
-            "Has LIST permission:",
-            has_perm
-        )
+        print("Namespace:", ns["tag"], "Has LIST permission:", has_perm)
 
         if has_perm:
             allowed_namespaces.append(ns)
@@ -196,11 +130,7 @@ def pid_namespaces(request):
     print(allowed_namespaces)
 
     return render(
-        request,
-        "pidmanager/pid_namespaces.html",
-        {
-            "namespaces": allowed_namespaces
-        }
+        request, "pidmanager/pid_namespaces.html", {"namespaces": allowed_namespaces}
     )
 
 
@@ -210,40 +140,20 @@ def pid_list(request, namespace_id):
     all_namespaces = list_namespaces()
 
     namespace = next(
-    (
-        ns
-        for ns in all_namespaces["items"]
-        if ns["id"] == namespace_id
-    ),
-    None
+        (ns for ns in all_namespaces["items"] if ns["id"] == namespace_id), None
     )
 
     if namespace is None:
         return HttpResponse("Namespace not found", status=404)
 
-    if not NamespacePermission.has_permission(
-        request.user,
-        namespace["tag"],
-        "list"
-    ):
-        return HttpResponseForbidden(
-            "You do not have permission."
-        )
+    if not NamespacePermission.has_permission(request.user, namespace["tag"], "list"):
+        return HttpResponseForbidden("You do not have permission.")
 
     limit = 13
 
-    offset = int(
-        request.GET.get(
-            "offset",
-            0
-        )
-    )
+    offset = int(request.GET.get("offset", 0))
 
-    data = list_pids(
-        namespace_id,
-        limit=limit,
-        offset=offset
-    )
+    data = list_pids(namespace_id, limit=limit, offset=offset)
 
     next_offset = None
 
@@ -253,21 +163,12 @@ def pid_list(request, namespace_id):
     previous_offset = None
 
     if offset > 0:
-        previous_offset = max(
-            0,
-            offset-limit
-        )
+        previous_offset = max(0, offset - limit)
 
-    visible_pids = [
-        pid
-        for pid in data["items"]
-        if not pid.get("deleted", False)
-]
+    visible_pids = [pid for pid in data["items"] if not pid.get("deleted", False)]
 
     can_update = NamespacePermission.has_permission(
-        request.user,
-        namespace["tag"],
-        "update/delete"
+        request.user, namespace["tag"], "update/delete"
     )
 
     return render(
@@ -279,138 +180,73 @@ def pid_list(request, namespace_id):
             "can_update": can_update,
             "next_offset": next_offset,
             "previous_offset": previous_offset,
-        }
+        },
     )
 
+
 @login_required
-def pid_edit(
-    request,
-    namespace_id,
-    pid
-):
+def pid_edit(request, namespace_id, pid):
 
     all_namespaces = list_namespaces()
 
     namespace = next(
-        (
-            ns
-            for ns in all_namespaces["items"]
-            if ns["id"] == namespace_id
-        ),
-        None
+        (ns for ns in all_namespaces["items"] if ns["id"] == namespace_id), None
     )
 
-
     if not NamespacePermission.has_permission(
-        request.user,
-        namespace["tag"],
-        "update/delete"
+        request.user, namespace["tag"], "update/delete"
     ):
-        return HttpResponseForbidden(
-            "Permission denied"
-        )
+        return HttpResponseForbidden("Permission denied")
 
     data = list_pids(namespace_id)
 
-    resource = next(
-        (
-            item
-            for item in data["items"]
-            if item["pid"] == pid
-        ),
-        None
-    )
+    resource = next((item for item in data["items"] if item["pid"] == pid), None)
 
     if resource is None:
-        return HttpResponse(
-            "PID not found",
-            status=404
-        )
+        return HttpResponse("PID not found", status=404)
     if resource["deleted"]:
-        return HttpResponse(
-            "PID not found",
-            status=404
-    )
+        return HttpResponse("PID not found", status=404)
     if request.method == "POST":
-
         form = PIDEditForm(request.POST)
 
         if form.is_valid():
-
             update_pid(
                 namespace_id=namespace_id,
                 pid=pid,
                 url=resource["url"],
                 metadata=form.cleaned_data["metadata"],
                 tag=resource["tag"],
-                deleted=resource["deleted"]
+                deleted=resource["deleted"],
             )
 
-            return redirect(
-                "pid_list",
-                namespace_id
-            )
+            return redirect("pid_list", namespace_id)
 
     else:
+        form = PIDEditForm(initial={"metadata": resource["metadata"]})
 
-        form = PIDEditForm(
-            initial={
-                "metadata": resource["metadata"]
-            }
-        )
+    return render(request, "pidmanager/pid_edit.html", {"form": form, "pid": pid})
 
-    return render(
-        request,
-        "pidmanager/pid_edit.html",
-        {
-            "form": form,
-            "pid": pid
-        }
-    )
 
 @login_required
-def pid_delete(
-    request,
-    namespace_id,
-    pid
-):
-    
+def pid_delete(request, namespace_id, pid):
+
     all_namespaces = list_namespaces()
 
     namespace = next(
-        (
-            ns
-            for ns in all_namespaces["items"]
-            if ns["id"] == namespace_id
-        ),
-        None
+        (ns for ns in all_namespaces["items"] if ns["id"] == namespace_id), None
     )
 
     if not NamespacePermission.has_permission(
-        request.user,
-        namespace["tag"],
-        "update/delete"
+        request.user, namespace["tag"], "update/delete"
     ):
-        return HttpResponseForbidden(
-            "Permission denied"
-        )
+        return HttpResponseForbidden("Permission denied")
 
     data = list_pids(namespace_id)
 
-    resource = next(
-        (
-            item
-            for item in data["items"]
-            if item["pid"] == pid
-        ),
-        None
-    )
+    resource = next((item for item in data["items"] if item["pid"] == pid), None)
 
     if resource is None:
-        return HttpResponse(
-            "PID not found",
-            status=404
-        )
+        return HttpResponse("PID not found", status=404)
     if request.method == "POST":
         update_pid(
             namespace_id=namespace_id,
@@ -418,20 +254,14 @@ def pid_delete(
             url=resource["url"],
             metadata=resource["metadata"],
             tag=resource["tag"],
-        deleted=True
+            deleted=True,
         )
 
-        return redirect(
-            "pid_list",
-            namespace_id
-        )
+        return redirect("pid_list", namespace_id)
     return render(
         request,
         "pidmanager/delete_confirm.html",
-        {
-            "pid": pid,
-            "namespace_id": namespace_id
-        }
+        {"pid": pid, "namespace_id": namespace_id},
     )
 
 
@@ -441,23 +271,17 @@ def resolve_pid(request):
     error = None
 
     if request.method == "POST":
-
         namespace_id = request.POST["namespace_id"]
         pid = request.POST["pid"]
 
         try:
-
-            pid_data = get_pid(
-                namespace_id,
-                pid
-            )
+            pid_data = get_pid(namespace_id, pid)
 
             # hide soft-deleted records
             if pid_data.get("deleted"):
                 raise Http404()
 
         except Exception:
-
             error = "PID not found."
 
     return render(
@@ -466,5 +290,5 @@ def resolve_pid(request):
         {
             "pid_data": pid_data,
             "error": error,
-        }
+        },
     )

@@ -2,15 +2,9 @@ from django import forms
 
 
 class NamespaceCreateForm(forms.Form):
+    tag = forms.CharField(max_length=100)
 
-    tag = forms.CharField(
-        max_length=100
-    )
-
-    pattern = forms.CharField(
-        max_length=100,
-        initial="***-***"
-    )
+    pattern = forms.CharField(max_length=100, initial="***-***")
 
     characters = forms.ChoiceField(
         choices=[
@@ -18,21 +12,16 @@ class NamespaceCreateForm(forms.Form):
         ]
     )
 
-class PIDCreateForm(forms.Form):
 
+class PIDCreateForm(forms.Form):
     namespace_id = forms.ChoiceField()
 
     url = forms.URLField()
 
-    metadata = forms.CharField(
-        widget=forms.Textarea
-    )
+    metadata = forms.CharField(widget=forms.Textarea)
 
     tag = forms.CharField()
 
 
 class PIDEditForm(forms.Form):
-
-    metadata = forms.CharField(
-        widget=forms.Textarea
-    )
+    metadata = forms.CharField(widget=forms.Textarea)

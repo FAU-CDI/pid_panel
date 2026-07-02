@@ -112,7 +112,6 @@ Permissions are enforced based on the authenticated user's role within each name
 * Django
 * Django REST Framework
 * SQLite
-* [Poetry](https://python-poetry.org) for dependency management
 
 ## Project Structure
 
@@ -120,6 +119,12 @@ Permissions are enforced based on the authenticated user's role within each name
 * `pidmanager/` – HTML views, forms, permissions, and Go client integration
 * `api/` – REST API endpoints
 * `pidproject/` – Django project configuration
+
+
+## Development
+
+* [Poetry](https://python-poetry.org) for dependency management
+* [Ruff](https://docs.astral.sh/ruff/) for linting & formatting
 
 ## Future Work
 
