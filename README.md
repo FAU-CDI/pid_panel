@@ -47,26 +47,26 @@ All endpoints require an authenticated user **except** retrieving an individual 
 
 ### Endpoints
 
-| Method   | Endpoint                                            | Description                                                                                              |
-| -------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `GET`    | `/pid/me`                                       | Returns information about the currently authenticated user.                                              |
-| `GET`    | `/pid/namespaces`                                | Lists all namespaces the authenticated user has access to, along with their assigned role.               |
-| `POST`   | `/pid/namespaces`                                | Creates a new namespace(by authenticated user). The creator is automatically assigned the **Manager** role.                     |
-| `GET`    | `/pid/namespaces/{namespace_id}/resources`       | Lists all non-deleted PIDs within the specified namespace. Requires the `list` permission.               |
-| `POST`   | `/pid/namespaces/{namespace_id}/resources`       | Creates a new PID within the specified namespace. Requires the `create` permission.                      |
-| `GET`    | `/pid/namespaces/{namespace_id}/resources/{pid}` | Retrieves the details of a specific PID. This endpoint is publicly accessible.                           |
-| `PATCH`  | `/pid/namespaces/{namespace_id}/resources/{pid}` | Updates the metadata of a PID. Requires the `update/delete` permission.                                  |
-| `DELETE` | `/pid/namespaces/{namespace_id}/resources/{pid}` | Soft deletes a PID. Requires the `update/delete` permission.                                             |
-| `GET`    | `/pid/namespaces/{namespace_id}/roles`          | Lists all users assigned to the namespace and their roles. Requires the `manage_permissions` permission. |
-| `PUT`    | `/pid/namespaces/{namespace_id}/roles`          | Assigns or updates a user's role within the namespace. Requires the `manage_permissions` permission.     |
-| `DELETE` | `/pid/namespaces/{namespace_id}/roles`          | Revokes a user's role within the namespace. Requires the `manage_permissions` permission.                |
+| Method   | Endpoint                                         | Description                                                                                                 |
+|----------|--------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
+| `GET`    | `/pid/me`                                        | Returns information about the currently authenticated user.                                                 |
+| `GET`    | `/pid/namespaces`                                | Lists all namespaces the authenticated user has access to, along with their assigned role.                  |
+| `POST`   | `/pid/namespaces`                                | Creates a new namespace(by authenticated user). The creator is automatically assigned the **Manager** role. |
+| `GET`    | `/pid/namespaces/{namespace_id}/resources`       | Lists all non-deleted PIDs within the specified namespace. Requires the `list` permission.                  |
+| `POST`   | `/pid/namespaces/{namespace_id}/resources`       | Creates a new PID within the specified namespace. Requires the `create` permission.                         |
+| `GET`    | `/pid/namespaces/{namespace_id}/resources/{pid}` | Retrieves the details of a specific PID. This endpoint is publicly accessible.                              |
+| `PATCH`  | `/pid/namespaces/{namespace_id}/resources/{pid}` | Updates the metadata of a PID. Requires the `update/delete` permission.                                     |
+| `DELETE` | `/pid/namespaces/{namespace_id}/resources/{pid}` | Soft deletes a PID. Requires the `update/delete` permission.                                                |
+| `GET`    | `/pid/namespaces/{namespace_id}/roles`           | Lists all users assigned to the namespace and their roles. Requires the `manage_permissions` permission.    |
+| `PUT`    | `/pid/namespaces/{namespace_id}/roles`           | Assigns or updates a user's role within the namespace. Requires the `manage_permissions` permission.        |
+| `DELETE` | `/pid/namespaces/{namespace_id}/roles`           | Revokes a user's role within the namespace. Requires the `manage_permissions` permission.                   |
 
 ### Roles
 
 Each user is assigned **one role per namespace**:
 
 | Role            | Permissions                                   |
-| --------------- | --------------------------------------------- |
+|-----------------|-----------------------------------------------|
 | **Viewer**      | List namespaces and PIDs                      |
 | **Contributor** | Viewer + Create PIDs                          |
 | **Editor**      | Contributor + Update/Delete PIDs              |
