@@ -112,6 +112,7 @@ Permissions are enforced based on the authenticated user's role within each name
 * Django
 * Django REST Framework
 * SQLite
+* [Poetry](https://python-poetry.org) for dependency management
 
 ## Project Structure
 
