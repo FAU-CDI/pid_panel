@@ -125,6 +125,7 @@ Permissions are enforced based on the authenticated user's role within each name
 
 * [Poetry](https://python-poetry.org) for dependency management
 * [Ruff](https://docs.astral.sh/ruff/) for linting & formatting
+* [MyPy](https://mypy.readthedocs.io/en/stable/) + [django-stubs](https://pypi.org/project/django-stubs/) + [djangorestframework-stubs](https://pypi.org/project/djangorestframework-stubs/) for type checking
 
 ## Future Work
 
