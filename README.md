@@ -120,6 +120,19 @@ Permissions are enforced based on the authenticated user's role within each name
 * `api/` – REST API endpoints
 * `pidproject/` – Django project configuration
 
+## Go Backend Configuration
+
+The Django application communicates with the Go backend through a configurable base URL.
+
+the Go backend URL in `pidproject/settings.py`:
+
+```python
+GO_BACKEND_URL = "http://127.0.0.1:8080"
+```
+
+By default, the application expects the Go backend to be running locally on port `8080`. If the backend is hosted elsewhere, we have to update `GO_BACKEND_URL` accordingly.
+
+
 
 ## Development
 
