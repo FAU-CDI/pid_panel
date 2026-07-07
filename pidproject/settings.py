@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-ms54v2soi=&g8_bwg&msix75@4o=c4=nxoo(90)p36tj*=y-)_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS: list[str] = []
 
 
 # Application definition
@@ -121,3 +121,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = "static/"
+
+# Go backend configuration
+GO_BACKEND_URL = "http://127.0.0.1:8080"

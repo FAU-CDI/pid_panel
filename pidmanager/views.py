@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 
-from .models import NamespacePermission
+from .models import NamespacePermission, Role, Permission
 from .forms import (
     NamespaceCreateForm,
     PIDEditForm,
@@ -41,7 +41,7 @@ def namespace_list(request):
         )
     )
 
-    allowed_namespaces = [ns for ns in data["items"] if ns["tag"] in user_namespaces]
+    allowed_namespaces = [ns for ns in data["items"] if ns["id"] in user_namespaces]
 
     return render(
         request,
@@ -68,7 +68,9 @@ def namespace_create(request):
             )
 
             NamespacePermission.grant_role(
-                request.user, namespace_data["tag"], "manager"
+                request.user,
+                namespace_data["id"],
+                Role.MANAGER,
             )
 
             return redirect("namespace_list")
@@ -87,7 +89,9 @@ def pid_create(request):
     allowed_namespaces = []
 
     for ns in data["items"]:
-        if NamespacePermission.has_permission(request.user, ns["tag"], "create"):
+        if NamespacePermission.has_permission(
+            request.user, ns["id"], Permission.CREATE
+        ):
             allowed_namespaces.append(ns)
 
     if request.method == "POST":
@@ -118,9 +122,11 @@ def pid_namespaces(request):
     allowed_namespaces = []
 
     for ns in data["items"]:
-        has_perm = NamespacePermission.has_permission(request.user, ns["tag"], "list")
+        has_perm = NamespacePermission.has_permission(
+            request.user, ns["id"], Permission.LIST
+        )
 
-        print("Namespace:", ns["tag"], "Has LIST permission:", has_perm)
+        print("Namespace:", ns["id"], "Has LIST permission:", has_perm)
 
         if has_perm:
             allowed_namespaces.append(ns)
@@ -145,7 +151,9 @@ def pid_list(request, namespace_id):
     if namespace is None:
         return HttpResponse("Namespace not found", status=404)
 
-    if not NamespacePermission.has_permission(request.user, namespace["tag"], "list"):
+    if not NamespacePermission.has_permission(
+        request.user, namespace["id"], Permission.LIST
+    ):
         return HttpResponseForbidden("You do not have permission.")
 
     limit = 13
@@ -167,7 +175,7 @@ def pid_list(request, namespace_id):
     visible_pids = [pid for pid in data["items"] if not pid.get("deleted", False)]
 
     can_update = NamespacePermission.has_permission(
-        request.user, namespace["tag"], "update/delete"
+        request.user, namespace["id"], Permission.UPDATE_DELETE
     )
 
     return render(
@@ -193,7 +201,7 @@ def pid_edit(request, namespace_id, pid):
     )
 
     if not NamespacePermission.has_permission(
-        request.user, namespace["tag"], "update/delete"
+        request.user, namespace["id"], Permission.UPDATE_DELETE
     ):
         return HttpResponseForbidden("Permission denied")
 
@@ -236,7 +244,7 @@ def pid_delete(request, namespace_id, pid):
     )
 
     if not NamespacePermission.has_permission(
-        request.user, namespace["tag"], "update/delete"
+        request.user, namespace["id"], Permission.UPDATE_DELETE
     ):
         return HttpResponseForbidden("Permission denied")
 

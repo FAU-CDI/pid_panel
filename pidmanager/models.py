@@ -2,33 +2,41 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
-class NamespacePermission(models.Model):
-    ROLE_CHOICES = [
-        ("viewer", "Viewer"),
-        ("contributor", "Contributor"),
-        ("editor", "Editor"),
-        ("manager", "Manager"),
-    ]
+class Permission(models.TextChoices):
+    LIST = "list", "List"
+    CREATE = "create", "Create"
+    UPDATE_DELETE = "update/delete", "Update/Delete"
+    MOUNT = "mount", "Mount"
+    MANAGE_PERMISSIONS = "manage_permissions", "Manage Permissions"
 
+
+class Role(models.TextChoices):
+    VIEWER = "viewer", "Viewer"
+    CONTRIBUTOR = "contributor", "Contributor"
+    EDITOR = "editor", "Editor"
+    MANAGER = "manager", "Manager"
+
+
+class NamespacePermission(models.Model):
     ROLE_PERMISSIONS = {
-        "viewer": [
-            "list",
+        Role.VIEWER: [
+            Permission.LIST,
         ],
-        "contributor": [
-            "list",
-            "create",
+        Role.CONTRIBUTOR: [
+            Permission.LIST,
+            Permission.CREATE,
         ],
-        "editor": [
-            "list",
-            "create",
-            "update/delete",
+        Role.EDITOR: [
+            Permission.LIST,
+            Permission.CREATE,
+            Permission.UPDATE_DELETE,
         ],
-        "manager": [
-            "list",
-            "create",
-            "update/delete",
-            "mount",
-            "manage_permissions",
+        Role.MANAGER: [
+            Permission.LIST,
+            Permission.CREATE,
+            Permission.UPDATE_DELETE,
+            Permission.MOUNT,
+            Permission.MANAGE_PERMISSIONS,
         ],
     }
 
@@ -36,7 +44,7 @@ class NamespacePermission(models.Model):
 
     namespace = models.CharField(max_length=255)
 
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+    role = models.CharField(max_length=20, choices=Role.choices)
 
     class Meta:
         constraints = [
