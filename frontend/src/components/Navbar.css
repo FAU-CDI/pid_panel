@@ -1,0 +1,65 @@
+.navbar {
+    height: 64px;
+    background-color: #364e78;
+    color: white;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 0 24px;
+
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.navbar h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.navbar-right span {
+    font-size: 1rem;
+}
+
+.badge {
+    background-color: #2563eb;
+    color: white;
+
+    padding: 4px 10px;
+
+    border-radius: 12px;
+
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.navbar button {
+    background-color: #dc2626;
+    color: white;
+
+    border: none;
+    border-radius: 6px;
+
+    padding: 8px 14px;
+
+    cursor: pointer;
+
+    font-size: 0.95rem;
+
+    transition: background-color 0.2s ease;
+}
+
+.navbar button:hover {
+    background-color: #b91c1c;
+}
+
+.navbar button:active {
+    transform: scale(0.98);
+}
