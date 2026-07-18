@@ -2,20 +2,28 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Navbar from "../components/Navbar";
+import NamespaceCard from "../components/NamespaceCard";
+import Pagination from "../components/Pagination";
+
+import "../styles/Dashboard.css";
 
 export default function Dashboard() {
 
     const navigate = useNavigate();
 
     const [user, setUser] = useState(null);
+
     const [namespaces, setNamespaces] = useState([]);
+
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        loadData();
-    }, []);
+    const [offset, setOffset] = useState(0);
 
-    async function loadData() {
+    const [nextOffset, setNextOffset] = useState(null);
+
+    const [previousOffset, setPreviousOffset] = useState(null);
+
+    async function loadData(currentOffset = 0) {
 
         const token = localStorage.getItem("access");
 
@@ -24,58 +32,77 @@ export default function Dashboard() {
             return;
         }
 
+        setLoading(true);
+
         try {
 
-            // Current user
-            const userResponse = await fetch(
-                "http://127.0.0.1:8000/pid/me",
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
+            const [userResponse, namespaceResponse] = await Promise.all([
 
-            if (!userResponse.ok) {
+                fetch(
+                    "http://127.0.0.1:8000/pid/me",
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                ),
+
+                fetch(
+                    `http://127.0.0.1:8000/pid/namespaces?offset=${currentOffset}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                )
+
+            ]);
+
+            if (!userResponse.ok || !namespaceResponse.ok) {
+
                 localStorage.removeItem("access");
                 localStorage.removeItem("refresh");
+
                 navigate("/");
+
                 return;
             }
 
             const userData = await userResponse.json();
-            setUser(userData);
-
-            // Namespaces
-            const namespaceResponse = await fetch(
-                "http://127.0.0.1:8000/pid/namespaces",
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-
-            if (!namespaceResponse.ok) {
-                throw new Error("Failed to load namespaces");
-            }
 
             const namespaceData = await namespaceResponse.json();
 
+            setUser(userData);
+
             setNamespaces(namespaceData.results);
 
+            setNextOffset(namespaceData.next_offset);
+
+            setPreviousOffset(namespaceData.previous_offset);
+
+            setOffset(namespaceData.offset);
+
         }
+
         catch (err) {
 
             console.error(err);
 
         }
+
         finally {
 
             setLoading(false);
 
         }
+
     }
+
+    useEffect(() => {
+
+        loadData(offset);
+
+    }, []);
 
     function logout() {
 
@@ -87,54 +114,71 @@ export default function Dashboard() {
     }
 
     if (loading) {
-        return <h2>Loading...</h2>;
+
+        return <h2 className="loading">Loading...</h2>;
+
     }
 
     return (
+
         <>
+
             <Navbar
                 user={user}
                 onLogout={logout}
             />
 
-            <div style={{ padding: "30px" }}>
+            <div className="dashboard">
 
-                <h2>Your Namespaces</h2>
+                <h1>Your Namespaces</h1>
 
-                {namespaces.length === 0 ? (
+                <div className="namespace-grid">
 
-                    <p>No namespaces assigned.</p>
+                    {namespaces.length === 0 ? (
 
-                ) : (
+                        <p>No namespaces available.</p>
 
-                    <table border="1" cellPadding="8">
+                    ) : (
 
-                        <thead>
-                            <tr>
-                                <th>Tag</th>
-                                <th>Role</th>
-                            </tr>
-                        </thead>
+                        namespaces.map((ns) => (
 
-                        <tbody>
+                            <NamespaceCard
+                                key={ns.id}
+                                namespace={ns}
+                            />
 
-                            {namespaces.map((ns) => (
+                        ))
 
-                                <tr key={ns.id}>
-                                    <td>{ns.tag}</td>
-                                    <td>{ns.role}</td>
-                                </tr>
+                    )}
 
-                            ))}
+                </div>
 
-                        </tbody>
+                <Pagination
 
-                    </table>
+                    previousOffset={previousOffset}
 
-                )}
+                    nextOffset={nextOffset}
+
+                    onPageChange={loadData}
+
+                />
+
+                <button
+
+                    className="create-button"
+
+                    onClick={() => navigate("/namespaces/create")}
+
+                >
+
+                    + Create Namespace
+
+                </button>
 
             </div>
 
         </>
+
     );
+
 }

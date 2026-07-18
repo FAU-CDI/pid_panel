@@ -3,7 +3,6 @@ from . import views
 
 urlpatterns = [
     path("me", views.current_user, name="current_user"),
-    path("logout/", views.logout, name="logout"),
     path("namespaces", views.namespaces, name="namespaces"),
     path("namespaces/<str:namespace_id>/resources", views.resources, name="resources"),
     path(

@@ -1,0 +1,39 @@
+.namespace-card{
+
+    border:1px solid #ddd;
+
+    border-radius:12px;
+
+    padding:20px;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+    background:white;
+
+}
+
+.namespace-card:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:0 6px 18px rgba(0,0,0,.15);
+
+}
+
+.namespace-card h2{
+
+    margin-top:0;
+
+    color:#1976d2;
+
+}
+
+.namespace-card p{
+
+    margin:12px 0;
+
+    word-break:break-word;
+
+}

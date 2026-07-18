@@ -1,0 +1,282 @@
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+
+import Navbar from "../components/Navbar";
+import Pagination from "../components/Pagination";
+
+import "../styles/NamespaceDetail.css";
+
+export default function NamespaceDetail() {
+
+    const { id } = useParams();
+
+    const navigate = useNavigate();
+
+    const [user, setUser] = useState(null);
+
+    const [namespace, setNamespace] = useState(null);
+
+    const [pids, setPids] = useState([]);
+
+    const [nextOffset, setNextOffset] = useState(null);
+
+    const [previousOffset, setPreviousOffset] = useState(null);
+
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+
+        loadNamespace(0);
+
+    }, []);
+
+    async function loadNamespace(offset) {
+
+        const token = localStorage.getItem("access");
+
+        setLoading(true);
+
+        try {
+
+            const [userResponse, resourceResponse] = await Promise.all([
+
+                fetch(
+                    "http://127.0.0.1:8000/pid/me",
+                    {
+                        headers:{
+                            Authorization:`Bearer ${token}`
+                        }
+                    }
+                ),
+
+                fetch(
+                    `http://127.0.0.1:8000/pid/namespaces/${id}/resources?offset=${offset}`,
+                    {
+                        headers:{
+                            Authorization:`Bearer ${token}`
+                        }
+                    }
+                )
+
+            ]);
+
+            if(!resourceResponse.ok){
+
+                navigate("/dashboard");
+
+                return;
+
+            }
+
+            setUser(await userResponse.json());
+
+            const data = await resourceResponse.json();
+
+            console.log(data);
+
+            setNamespace(data.namespace);
+
+            setPids(data.results);
+
+            setNextOffset(data.next_offset);
+
+            setPreviousOffset(data.previous_offset);
+
+        }
+
+        finally{
+
+            setLoading(false);
+
+        }
+
+    }
+
+    function canCreate(){
+
+        return [
+
+            "contributor",
+
+            "editor",
+
+            "manager"
+
+        ].includes(namespace.role);
+
+    }
+
+    function canEdit(){
+
+        return [
+
+            "editor",
+
+            "manager"
+
+        ].includes(namespace.role);
+
+    }
+
+    if(loading){
+
+        return <h2>Loading...</h2>;
+
+    }
+
+    return(
+
+        <>
+
+        <Navbar user={user}/>
+
+        <div className="namespace-page">
+
+            <div className="namespace-header">
+
+                <h1>{namespace.tag}</h1>
+
+                <p>ID: {namespace.id}</p>
+
+                <p>Your role: {namespace.role}</p>
+
+            </div>
+
+            <table className="pid-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>PID</th>
+
+                        <th>Tag</th>
+
+                        <th>URL</th>
+
+                        <th>Metadata</th>
+
+                        {canEdit() &&
+
+                            <th>Actions</th>
+
+                        }
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {
+
+                        pids.map(pid=>(
+
+                            <tr key={pid.pid}>
+
+                                <td>{pid.pid}</td>
+
+                                <td>{pid.tag}</td>
+
+                                <td>{pid.url}</td>
+
+                                <td>{pid.metadata}</td>
+
+                                {
+
+                                    canEdit() &&
+
+                                    <td>
+
+                                        <button
+                                        onClick={()=>
+
+                                            navigate(
+
+                                                `/namespaces/${id}/resources/${pid.pid}/edit`
+
+                                            )
+
+                                        }
+
+                                        >
+
+                                            Edit
+
+                                        </button>
+
+                                        <button
+
+                                        onClick={()=>
+
+                                            navigate(
+
+                                                `/namespaces/${id}/resources/${pid.pid}/delete`
+
+                                            )
+
+                                        }
+
+                                        >
+
+                                            Delete
+
+                                        </button>
+
+                                    </td>
+
+                                }
+
+                            </tr>
+
+                        ))
+
+                    }
+
+                </tbody>
+
+            </table>
+
+            <Pagination
+
+                previousOffset={previousOffset}
+
+                nextOffset={nextOffset}
+
+                onPageChange={loadNamespace}
+
+            />
+
+            {
+
+                canCreate() &&
+
+                <button
+
+                    className="create-pid"
+
+                    onClick={()=>
+
+                        navigate(
+
+                            `/namespaces/${id}/resources/create`
+
+                        )
+
+                    }
+
+                >
+
+                    Create PID
+
+                </button>
+
+            }
+
+        </div>
+
+        </>
+
+    );
+
+}

@@ -3,13 +3,10 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
 from rest_framework.response import Response
-from rest_framework import status
 
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login as django_login
-from django.contrib.auth import logout as django_logout
 
-from pidmanager.models import NamespacePermission
+from pidmanager.models import NamespacePermission, Role
 
 from pidmanager.services.go_client import (
     list_namespaces,
@@ -27,16 +24,6 @@ def current_user(request):
 
     return Response(
         {"username": request.user.username, "is_superuser": request.user.is_superuser}
-    )
-
-
-@api_view(["POST"])
-def logout(request):
-
-    return Response(
-        {
-            "message": "Logged out"
-        }
     )
 
 
@@ -65,7 +52,7 @@ def namespaces(request):
 
         for ns in go_data["items"]:
             assignment = NamespacePermission.objects.filter(
-                user=request.user, namespace=ns["tag"]
+                user=request.user, namespace=ns["id"]
             ).first()
 
             if assignment:
@@ -90,7 +77,7 @@ def namespaces(request):
             request.data["tag"], request.data["pattern"], request.data["characters"]
         )
 
-        NamespacePermission.set_role(request.user, namespace["tag"], "manager")
+        NamespacePermission.set_role(request.user, namespace["id"], "manager")
 
         return Response(namespace, status=201)
 
@@ -114,7 +101,7 @@ def resources(request, namespace_id):
             return Response({"error": "Namespace not found"}, status=404)
 
         if not NamespacePermission.has_permission(
-            request.user, namespace["tag"], "list"
+            request.user, namespace["id"], "list"
         ):
             return Response({"error": "Permission denied"}, status=403)
 
@@ -135,6 +122,12 @@ def resources(request, namespace_id):
             previous_offset = max(0, offset - limit)
 
         visible = [pid for pid in data["items"] if not pid["deleted"]]
+
+        assignment = NamespacePermission.objects.filter(
+            user=request.user, namespace=namespace["id"]
+        ).first()
+
+        namespace["role"] = assignment.role if assignment else None
 
         return Response(
             {
@@ -199,13 +192,13 @@ def namespace_roles(request, namespace_id):
         return Response({"error": "Namespace not found"}, status=404)
 
     if not NamespacePermission.has_permission(
-        request.user, namespace["tag"], "manage_permissions"
+        request.user, namespace["id"], "manage_permissions"
     ):
         return Response({"error": "Permission denied"}, status=403)
 
     if request.method == "GET":
         assignments = NamespacePermission.objects.filter(
-            namespace=namespace["tag"]
+            namespace=namespace["id"]
         ).select_related("user")
 
         results = [
@@ -219,7 +212,7 @@ def namespace_roles(request, namespace_id):
 
         return Response(
             {
-                "namespace": namespace["tag"],
+                "namespace": namespace["id"],
                 "count": len(results),
                 "results": results,
             }
@@ -238,10 +231,10 @@ def namespace_roles(request, namespace_id):
 
         role = request.data["role"]
 
-        if role not in dict(NamespacePermission.ROLE_CHOICES):
+        if role not in Role.values:
             return Response({"error": "Invalid role"}, status=400)
 
-        NamespacePermission.set_role(target_user, namespace["tag"], role)
+        NamespacePermission.set_role(target_user, namespace["id"], role)
 
         return Response(
             {
@@ -263,6 +256,6 @@ def namespace_roles(request, namespace_id):
                 {"error": "Managers cannot revoke their own role."}, status=403
             )
 
-        NamespacePermission.revoke_role(target_user, namespace["tag"])
+        NamespacePermission.revoke_role(target_user, namespace["id"])
 
         return Response({"message": "Role revoked successfully"})
