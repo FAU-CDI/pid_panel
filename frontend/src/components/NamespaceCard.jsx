@@ -2,6 +2,8 @@ import { useNavigate } from "react-router-dom";
 
 import "../styles/NamespaceCard.css";
 
+import InfoTooltip from "./InfoTooltip";
+
 export default function NamespaceCard({ namespace }) {
 
     const navigate = useNavigate();
@@ -21,12 +23,16 @@ export default function NamespaceCard({ namespace }) {
             <h2>
 
                 {namespace.tag}
+                <InfoTooltip text="This is the tag for your namespace." />
 
             </h2>
 
             <p>
 
-                <strong>ID</strong>
+                <strong>
+                    ID
+                    <InfoTooltip text="This is the unique ID for your namespace." />
+                </strong>
 
                 <br/>
 
@@ -36,7 +42,10 @@ export default function NamespaceCard({ namespace }) {
 
             <p>
 
-                <strong>Role</strong>
+                <strong>
+                    Role
+                    <InfoTooltip text="This is your role in the namespace." />
+                </strong>
 
                 <br/>
 

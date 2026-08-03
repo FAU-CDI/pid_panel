@@ -3,7 +3,7 @@ import "./Navbar.css";
 export default function Navbar({ user, onLogout }) {
   return (
     <nav className="navbar">
-      <h2>QuickPID</h2>
+      <h2>PID</h2>
 
       <div className="navbar-right">
         <span>{user?.username}</span>

@@ -5,6 +5,10 @@ import Navbar from "../components/Navbar";
 
 import "../styles/CreateNamespace.css";
 
+import { getCookie } from "../utils/csrf";
+
+import InfoTooltip from "../components/InfoTooltip";
+
 export default function CreateNamespace() {
 
     const navigate = useNavigate();
@@ -29,36 +33,23 @@ export default function CreateNamespace() {
 
         try {
 
-            const token = localStorage.getItem("access");
-
             const response = await fetch(
-
-                "http://127.0.0.1:8000/pid/namespaces",
-
+                "http://localhost:8000/pid/namespaces",
                 {
-
                     method: "POST",
-
+                    credentials: "include",
+                
                     headers: {
-
                         "Content-Type": "application/json",
-
-                        Authorization: `Bearer ${token}`,
-
+                        "X-CSRFToken": getCookie("csrftoken"),
                     },
-
+                
                     body: JSON.stringify({
-
                         tag,
-
                         pattern,
-
                         characters,
-
                     }),
-
                 }
-
             );
 
             if (!response.ok) {
@@ -98,9 +89,8 @@ export default function CreateNamespace() {
                 <form onSubmit={createNamespace}>
 
                     <label>
-
                         Namespace Tag
-
+                        <InfoTooltip text="This is the unique identifier for your namespace." />
                     </label>
 
                     <input
@@ -116,9 +106,8 @@ export default function CreateNamespace() {
                     />
 
                     <label>
-
                         PID Pattern
-
+                        <InfoTooltip text="Defines the format of generated PIDs (e.g. ***-***)." />
                     </label>
 
                     <input
@@ -136,9 +125,8 @@ export default function CreateNamespace() {
                     />
 
                     <label>
-
                         Characters
-
+                        <InfoTooltip text="Choose which types of characters can appear in generated PIDs." />
                     </label>
 
                     <select

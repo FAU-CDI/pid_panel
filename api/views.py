@@ -17,6 +17,16 @@ from pidmanager.services.go_client import (
     update_pid,
 )
 
+from django.http import JsonResponse
+
+from django.middleware.csrf import get_token
+
+
+@api_view(["GET"])
+def csrf(request):
+    return JsonResponse({
+        "csrfToken": get_token(request)
+    })
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])

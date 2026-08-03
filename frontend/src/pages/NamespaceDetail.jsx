@@ -6,6 +6,8 @@ import Pagination from "../components/Pagination";
 
 import "../styles/NamespaceDetail.css";
 
+import InfoTooltip from "../components/InfoTooltip";
+
 export default function NamespaceDetail() {
 
     const { id } = useParams();
@@ -32,7 +34,6 @@ export default function NamespaceDetail() {
 
     async function loadNamespace(offset) {
 
-        const token = localStorage.getItem("access");
 
         setLoading(true);
 
@@ -41,20 +42,16 @@ export default function NamespaceDetail() {
             const [userResponse, resourceResponse] = await Promise.all([
 
                 fetch(
-                    "http://127.0.0.1:8000/pid/me",
+                    "http://localhost:8000/pid/me",
                     {
-                        headers:{
-                            Authorization:`Bearer ${token}`
-                        }
+                        credentials: "include",
                     }
                 ),
 
                 fetch(
-                    `http://127.0.0.1:8000/pid/namespaces/${id}/resources?offset=${offset}`,
+                    `http://localhost:8000/pid/namespaces/${id}/resources?offset=${offset}`,
                     {
-                        headers:{
-                            Authorization:`Bearer ${token}`
-                        }
+                        credentials: "include",
                     }
                 )
 
@@ -148,17 +145,32 @@ export default function NamespaceDetail() {
 
                     <tr>
 
-                        <th>PID</th>
+                        <th>
+                            PID
+                            <InfoTooltip text="This is PID id" />
+                        </th>
 
-                        <th>Tag</th>
+                        <th>
+                            Tag
+                            <InfoTooltip text="This is the unique identifier for your PID." />
+                        </th>
 
-                        <th>URL</th>
+                        <th>
+                            URL
+                            <InfoTooltip text="This is the URL that the PID will resolve to." />
+                        </th>
 
-                        <th>Metadata</th>
+                        <th>
+                            Metadata
+                            <InfoTooltip text="Additional information about the PID." />
+                        </th>
 
                         {canEdit() &&
 
-                            <th>Actions</th>
+                            <th>
+                                Actions
+                                <InfoTooltip text="Actions you can take on the PID." />
+                            </th>
 
                         }
 
@@ -178,7 +190,15 @@ export default function NamespaceDetail() {
 
                                 <td>{pid.tag}</td>
 
-                                <td>{pid.url}</td>
+                                <td>
+                                    <a
+                                        href={pid.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        {pid.url}
+                                    </a>
+                                </td>
 
                                 <td>{pid.metadata}</td>
 

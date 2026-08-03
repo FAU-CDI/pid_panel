@@ -62,14 +62,29 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
 ]
 
-REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
-}
+LOGIN_REDIRECT_URL = "http://localhost:5173/dashboard"
+LOGOUT_REDIRECT_URL = "http://localhost:5173/"
 
-LOGIN_REDIRECT_URL = "/dashboard/"
-LOGOUT_REDIRECT_URL = "/login/"
+AUTHLIB_OAUTH_CLIENTS = {
+
+    "keycloak": {
+
+        "client_id": "local_pid_customer_system",
+
+        "client_secret": "xeC5riLudYoYNJcxPgsEvfen7tG0kGqz",
+
+        "server_metadata_url":
+            "https://auth-staging.data.fau.de/realms/cdi/.well-known/openid-configuration",
+
+        "client_kwargs": {
+
+            "scope": "openid profile email"
+
+        }
+
+    }
+
+}
 
 ROOT_URLCONF = "pidproject.urls"
 

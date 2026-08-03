@@ -5,6 +5,8 @@ import Navbar from "../components/Navbar";
 import NamespaceCard from "../components/NamespaceCard";
 import Pagination from "../components/Pagination";
 
+import { getCookie } from "../utils/csrf";
+
 import "../styles/Dashboard.css";
 
 export default function Dashboard() {
@@ -25,46 +27,27 @@ export default function Dashboard() {
 
     async function loadData(currentOffset = 0) {
 
-        const token = localStorage.getItem("access");
-
-        if (!token) {
-            navigate("/");
-            return;
-        }
-
         setLoading(true);
 
         try {
 
             const [userResponse, namespaceResponse] = await Promise.all([
 
-                fetch(
-                    "http://127.0.0.1:8000/pid/me",
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                ),
+                fetch("http://localhost:8000/pid/me", {
+                    credentials: "include",
+                }),
 
                 fetch(
-                    `http://127.0.0.1:8000/pid/namespaces?offset=${currentOffset}`,
+                    `http://localhost:8000/pid/namespaces?offset=${currentOffset}`,
                     {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
+                        credentials: "include",
                     }
                 )
 
             ]);
 
             if (!userResponse.ok || !namespaceResponse.ok) {
-
-                localStorage.removeItem("access");
-                localStorage.removeItem("refresh");
-
                 navigate("/");
-
                 return;
             }
 
@@ -104,10 +87,14 @@ export default function Dashboard() {
 
     }, []);
 
-    function logout() {
+    async function logout() {
 
-        localStorage.removeItem("access");
-        localStorage.removeItem("refresh");
+        await fetch(
+            "http://localhost:8000/auth/logout/",
+            {
+                credentials: "include",
+            }
+        );
 
         navigate("/");
 
@@ -131,6 +118,8 @@ export default function Dashboard() {
             <div className="dashboard">
 
                 <h1>Your Namespaces</h1>
+
+                <p>Namespace info here (to be added)</p>
 
                 <div className="namespace-grid">
 
