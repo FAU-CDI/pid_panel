@@ -5,12 +5,19 @@ from django.contrib.auth import login as django_login
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth.models import User
 
+from accounts.models import UserMapping
+from accounts.utils import generate_go_username
+
+from pidmanager.services.go_client import create_go_user
+from accounts.utils import get_go_username
+
 oauth = OAuth()
 
 oauth.register(
     "keycloak",
     **settings.AUTHLIB_OAUTH_CLIENTS["keycloak"],
 )
+
 
 def login(request):
 
@@ -21,31 +28,43 @@ def login(request):
         redirect_uri,
     )
 
+
 def callback(request):
 
     token = oauth.keycloak.authorize_access_token(request)
 
     userinfo = token["userinfo"]
 
-    user, created = User.objects.get_or_create(
+    preferred = userinfo["preferred_username"]
+    email = userinfo.get("email", "")
 
-        username=userinfo["preferred_username"],
-
+    # Django user
+    user, _ = User.objects.get_or_create(
+        username=preferred,
         defaults={
-
-            "email": userinfo.get("email", ""),
-
+            "email": email,
             "first_name": userinfo.get("given_name", ""),
-
             "last_name": userinfo.get("family_name", ""),
-
-        }
-
+        },
     )
+
+    # Go user mapping
+    mapping, created = UserMapping.objects.get_or_create(
+        preferred_username=preferred,
+        defaults={
+            "email": email,
+            "go_username": generate_go_username(),
+        },
+    )
+
+    # Create the Go account only once
+    if created:
+        create_go_user(mapping.go_username)
 
     django_login(request, user)
 
     return redirect("http://localhost:5173/dashboard")
+
 
 def logout(request):
 

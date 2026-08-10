@@ -1,0 +1,34 @@
+.site-footer {
+    width: 100%;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    margin-top: auto;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: 56px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+
+    padding: 0 24px;
+
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.footer-content span {
+    white-space: nowrap;
+}
+
+.footer-content span:not(:first-child) {
+    cursor: pointer;
+}
+
+.footer-content span:not(:first-child):hover {
+    color: #111827;
+}

@@ -13,7 +13,7 @@ export default function Login() {
 
         <div className="login-container">
 
-            <h1>QuickPID</h1>
+            <h1>PID</h1>
 
             <p>Sign in using FAU SSO</p>
 

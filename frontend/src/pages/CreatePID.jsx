@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import Navbar from "../components/Navbar";
@@ -6,6 +6,7 @@ import Navbar from "../components/Navbar";
 import "../styles/CreatePID.css";
 
 import InfoTooltip from "../components/InfoTooltip";
+import Footer from "../components/Footer";
 
 import { getCookie } from "../utils/csrf";
 
@@ -15,7 +16,7 @@ export default function CreatePID() {
 
     const navigate = useNavigate();
 
-    const [tag, setTag] = useState("");
+    const [tags, setTags] = useState([""]);
 
     const [url, setUrl] = useState("");
 
@@ -23,67 +24,139 @@ export default function CreatePID() {
 
     const [error, setError] = useState("");
 
-    async function createPID(e) {
+    const [user, setUser] = useState(null);
 
-        e.preventDefault();
+    useEffect(() => {
+    
+            loadUser();
+    
+        }, []);
+    
+    
+    async function loadUser() {
 
         try {
 
             const response = await fetch(
-
-                `http://localhost:8000/pid/namespaces/${id}/resources`,
-
+                "http://localhost:8000/pid/me",
                 {
-
-                    method: "POST",
-
                     credentials: "include",
-
-                    headers: {
-                    
-                        "Content-Type": "application/json",
-                    
-                        "X-CSRFToken": getCookie("csrftoken"),
-                    
-                    },
-
-                    body: JSON.stringify({
-
-                        tag,
-
-                        url,
-
-                        metadata
-
-                    })
-
                 }
-
             );
 
             if (!response.ok) {
-
-                throw new Error();
-
+                navigate("/");
+                return;
             }
 
-            navigate(`/namespaces/${id}`);
+            const data = await response.json();
 
-        }
+            setUser(data);
 
-        catch {
+        } catch {
 
-            setError("Unable to create PID.");
+            navigate("/");
 
         }
 
     }
 
+    function updateTag(index, value) {
+
+        setTags(previousTags => {
+
+            const updatedTags = [...previousTags];
+
+            updatedTags[index] = value;
+
+            return updatedTags;
+
+        });
+
+    }
+
+    function addTag() {
+
+        setTags(previousTags => [
+            ...previousTags,
+            ""
+        ]);
+
+    }
+
+    function removeTag(index) {
+
+        setTags(previousTags => {
+
+            if (previousTags.length === 1) {
+                return [""];
+            }
+
+            return previousTags.filter(
+                (_, tagIndex) => tagIndex !== index
+            );
+
+        });
+
+    }
+
+    
+
+    async function createPID(e) {
+
+        e.preventDefault();
+
+        setError("");
+
+        // Remove empty tags before sending them.
+        const cleanedTags = tags
+            .map(tag => tag.trim())
+            .filter(tag => tag.length > 0);
+
+        if (cleanedTags.length === 0) {
+
+            setError("Please enter at least one tag.");
+
+            return;
+        }
+
+        try {
+
+            const response = await fetch(
+                `http://localhost:8000/pid/namespaces/${id}/resources`,
+                {
+                    method: "POST",
+
+                    credentials: "include",
+
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie("csrftoken"),
+                    },
+
+                    body: JSON.stringify({
+                        url,
+                        metadata,
+                        tags: cleanedTags,
+                    })
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error();
+            }
+
+            navigate(`/namespaces/${id}`);
+
+        }
+        catch {
+            setError("Unable to create PID.");
+        }
+    }
+
     return (
-
         <>
-
-            <Navbar />
+            <Navbar user={user} />
 
             <div className="create-pid-container">
 
@@ -92,19 +165,58 @@ export default function CreatePID() {
                 <form onSubmit={createPID}>
 
                     <label>
-                        Tag
-                        <InfoTooltip text="This is the unique identifier for your PID." />
+                        Tags
+                        <InfoTooltip text="Tags associated with this PID." />
                     </label>
 
-                    <input
+                    <div className="tags-container">
 
-                        value={tag}
+                        {tags.map((tag, index) => (
 
-                        onChange={(e)=>setTag(e.target.value)}
+                            <div
+                                className="tag-input-row"
+                                key={index}
+                            >
 
-                        required
+                                <input
+                                    value={tag}
+                                    onChange={(e) =>
+                                        updateTag(
+                                            index,
+                                            e.target.value
+                                        )
+                                    }
+                                    required={index === 0}
+                                    placeholder="Enter tag"
+                                />
 
-                    />
+                                {index === tags.length - 1 ? (
+
+                                    <button
+                                        type="button"
+                                        onClick={addTag}
+                                        className="tag-button"
+                                    >
+                                        +
+                                    </button>
+
+                                ) : (
+
+                                    <button
+                                        type="button"
+                                        onClick={() => removeTag(index)}
+                                        className="tag-button"
+                                    >
+                                        −
+                                    </button>
+
+                                )}
+
+                            </div>
+
+                        ))}
+
+                    </div>
 
                     <label>
                         URL
@@ -112,13 +224,9 @@ export default function CreatePID() {
                     </label>
 
                     <input
-
                         value={url}
-
-                        onChange={(e)=>setUrl(e.target.value)}
-
+                        onChange={(e) => setUrl(e.target.value)}
                         required
-
                     />
 
                     <label>
@@ -127,37 +235,25 @@ export default function CreatePID() {
                     </label>
 
                     <textarea
-
                         rows="6"
-
                         value={metadata}
-
-                        onChange={(e)=>setMetadata(e.target.value)}
-
+                        onChange={(e) => setMetadata(e.target.value)}
                     />
 
                     <button type="submit">
-
                         Create PID
-
                     </button>
 
                 </form>
 
                 {error &&
-
                     <p className="error">
-
                         {error}
-
                     </p>
-
                 }
 
             </div>
-
+            <Footer />
         </>
-
     );
-
 }

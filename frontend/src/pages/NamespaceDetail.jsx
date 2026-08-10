@@ -7,6 +7,7 @@ import Pagination from "../components/Pagination";
 import "../styles/NamespaceDetail.css";
 
 import InfoTooltip from "../components/InfoTooltip";
+import Footer from "../components/Footer";
 
 export default function NamespaceDetail() {
 
@@ -15,180 +16,147 @@ export default function NamespaceDetail() {
     const navigate = useNavigate();
 
     const [user, setUser] = useState(null);
-
     const [namespace, setNamespace] = useState(null);
-
     const [pids, setPids] = useState([]);
 
     const [nextOffset, setNextOffset] = useState(null);
-
     const [previousOffset, setPreviousOffset] = useState(null);
 
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-
         loadNamespace(0);
-
     }, []);
 
     async function loadNamespace(offset) {
 
-
         setLoading(true);
-
+        
         try {
-
+        
             const [userResponse, resourceResponse] = await Promise.all([
-
+            
                 fetch(
                     "http://localhost:8000/pid/me",
                     {
                         credentials: "include",
                     }
                 ),
-
+            
                 fetch(
                     `http://localhost:8000/pid/namespaces/${id}/resources?offset=${offset}`,
                     {
                         credentials: "include",
                     }
                 )
-
+            
             ]);
-
-            if(!resourceResponse.ok){
-
+        
+            if (!resourceResponse.ok) {
                 navigate("/dashboard");
-
                 return;
-
             }
-
+        
             setUser(await userResponse.json());
-
+        
             const data = await resourceResponse.json();
-
+        
             console.log(data);
-
+        
             setNamespace(data.namespace);
-
             setPids(data.results);
-
             setNextOffset(data.next_offset);
-
             setPreviousOffset(data.previous_offset);
-
+        
         }
-
-        finally{
-
+        finally {
             setLoading(false);
-
         }
-
     }
 
-    function canCreate(){
-
+    function canCreate() {
         return [
-
             "contributor",
-
             "editor",
-
             "manager"
-
         ].includes(namespace.role);
-
     }
 
-    function canEdit(){
-
+    function canEdit() {
         return [
-
             "editor",
-
             "manager"
-
         ].includes(namespace.role);
-
     }
 
-    if(loading){
-
+    if (loading || !namespace) {
         return <h2>Loading...</h2>;
-
     }
 
-    return(
-
+    return (
         <>
+            <Navbar user={user} />
 
-        <Navbar user={user}/>
+            <div className="namespace-page">
 
-        <div className="namespace-page">
+                <div className="namespace-header">
 
-            <div className="namespace-header">
+                    <h1>{namespace.tag}</h1>
 
-                <h1>{namespace.tag}</h1>
+                    <p>ID: {namespace.id}</p>
 
-                <p>ID: {namespace.id}</p>
+                    <p>Your role: {namespace.role}</p>
 
-                <p>Your role: {namespace.role}</p>
+                </div>
 
-            </div>
+                <table className="pid-table">
 
-            <table className="pid-table">
+                    <thead>
 
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            PID
-                            <InfoTooltip text="This is PID id" />
-                        </th>
-
-                        <th>
-                            Tag
-                            <InfoTooltip text="This is the unique identifier for your PID." />
-                        </th>
-
-                        <th>
-                            URL
-                            <InfoTooltip text="This is the URL that the PID will resolve to." />
-                        </th>
-
-                        <th>
-                            Metadata
-                            <InfoTooltip text="Additional information about the PID." />
-                        </th>
-
-                        {canEdit() &&
+                        <tr>
 
                             <th>
-                                Actions
-                                <InfoTooltip text="Actions you can take on the PID." />
+                                PID
+                                <InfoTooltip text="This is PID id" />
                             </th>
 
-                        }
+                            <th>
+                                Tags
+                                <InfoTooltip text="Tags associated with this PID." />
+                            </th>
 
-                    </tr>
+                            <th>
+                                URL
+                                <InfoTooltip text="This is the URL that the PID will resolve to." />
+                            </th>
 
-                </thead>
+                            <th>
+                                Metadata
+                                <InfoTooltip text="Additional information about the PID." />
+                            </th>
 
-                <tbody>
+                            {canEdit() &&
+                                <th>
+                                    Actions
+                                    <InfoTooltip text="Actions you can take on the PID." />
+                                </th>
+                            }
 
-                    {
+                        </tr>
 
-                        pids.map(pid=>(
+                    </thead>
+
+                    <tbody>
+
+                        {pids.map(pid => (
 
                             <tr key={pid.pid}>
 
                                 <td>{pid.pid}</td>
 
-                                <td>{pid.tag}</td>
+                                <td>
+                                    {pid.tags?.join(", ") || ""}
+                                </td>
 
                                 <td>
                                     <a
@@ -202,101 +170,61 @@ export default function NamespaceDetail() {
 
                                 <td>{pid.metadata}</td>
 
-                                {
-
-                                    canEdit() &&
-
+                                {canEdit() &&
                                     <td>
 
                                         <button
-                                        onClick={()=>
-
-                                            navigate(
-
-                                                `/namespaces/${id}/resources/${pid.pid}/edit`
-
-                                            )
-
-                                        }
-
+                                            onClick={() =>
+                                                navigate(
+                                                    `/namespaces/${id}/resources/${pid.pid}/edit`
+                                                )
+                                            }
                                         >
-
                                             Edit
-
                                         </button>
 
                                         <button
-
-                                        onClick={()=>
-
-                                            navigate(
-
-                                                `/namespaces/${id}/resources/${pid.pid}/delete`
-
-                                            )
-
-                                        }
-
+                                            onClick={() =>
+                                                navigate(
+                                                    `/namespaces/${id}/resources/${pid.pid}/delete`
+                                                )
+                                            }
                                         >
-
                                             Delete
-
                                         </button>
 
                                     </td>
-
                                 }
 
                             </tr>
 
-                        ))
+                        ))}
 
-                    }
+                    </tbody>
 
-                </tbody>
+                </table>
 
-            </table>
+                <Pagination
+                    previousOffset={previousOffset}
+                    nextOffset={nextOffset}
+                    onPageChange={loadNamespace}
+                />
 
-            <Pagination
+                {canCreate() &&
+                    <button
+                        className="create-pid"
+                        onClick={() =>
+                            navigate(
+                                `/namespaces/${id}/resources/create`
+                            )
+                        }
+                    >
+                        Create PID
+                    </button>
+                }
 
-                previousOffset={previousOffset}
-
-                nextOffset={nextOffset}
-
-                onPageChange={loadNamespace}
-
-            />
-
-            {
-
-                canCreate() &&
-
-                <button
-
-                    className="create-pid"
-
-                    onClick={()=>
-
-                        navigate(
-
-                            `/namespaces/${id}/resources/create`
-
-                        )
-
-                    }
-
-                >
-
-                    Create PID
-
-                </button>
-
-            }
-
-        </div>
-
+            </div>
+            <Footer />
         </>
-
     );
-
 }

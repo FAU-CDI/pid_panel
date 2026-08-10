@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import NamespaceCard from "../components/NamespaceCard";
 import Pagination from "../components/Pagination";
+import Footer from "../components/Footer";
 
 import { getCookie } from "../utils/csrf";
 
@@ -165,6 +166,8 @@ export default function Dashboard() {
                 </button>
 
             </div>
+
+            <Footer />
 
         </>
 

@@ -1,21 +1,34 @@
 import "./Navbar.css";
 
-export default function Navbar({ user, onLogout }) {
-  return (
-    <nav className="navbar">
-      <h2>PID</h2>
+export default function Navbar({ user }) {
 
-      <div className="navbar-right">
-        <span>{user?.username}</span>
+    const onLogout = () => {
+        window.location.href = "http://localhost:8000/auth/logout/";
+    };
 
-        {user?.is_superuser && (
-          <span className="badge">Superuser</span>
-        )}
+    return (
+        <nav className="navbar">
 
-        <button onClick={onLogout}>
-          Logout
-        </button>
-      </div>
-    </nav>
-  );
+            <h2>PID</h2>
+
+            <div className="navbar-right">
+
+                <span>
+                    {user?.display_username}
+                </span>
+
+                {user?.is_superuser && (
+                    <span className="badge">
+                        Superuser
+                    </span>
+                )}
+
+                <button onClick={onLogout}>
+                    Logout
+                </button>
+
+            </div>
+
+        </nav>
+    );
 }

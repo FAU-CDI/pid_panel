@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -156,3 +155,8 @@ STATIC_URL = "static/"
 # Go backend configuration
 GO_BACKEND_URL = "http://127.0.0.1:8080"
 CORS_ALLOW_CREDENTIALS = True
+
+try:
+    from .local_settings import *
+except ImportError:
+    pass

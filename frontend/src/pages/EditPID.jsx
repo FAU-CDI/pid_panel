@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 import "../styles/EditPID.css";
-
 import { getCookie } from "../utils/csrf";
 
 export default function EditPID() {
@@ -21,28 +21,56 @@ export default function EditPID() {
 
     const [error, setError] = useState("");
 
+    const [user, setUser] = useState(null);
+
     useEffect(() => {
-
-        loadPID();
-
-    }, []);
-
-    async function loadPID() {
-
-        const token = localStorage.getItem("access");
+    
+            loadUser();
+    
+        }, []);
+    
+    
+    async function loadUser() {
 
         try {
 
             const response = await fetch(
-
-                `http://localhost:8000/pid/namespaces/${id}/resources/${pid}`,
-
+                "http://localhost:8000/pid/me",
                 {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
+                    credentials: "include",
                 }
+            );
 
+            if (!response.ok) {
+                navigate("/");
+                return;
+            }
+
+            const data = await response.json();
+
+            setUser(data);
+
+        } catch {
+
+            navigate("/");
+
+        }
+
+    }
+
+    useEffect(() => {
+        loadPID();
+    }, []);
+
+    async function loadPID() {
+
+        try {
+
+            const response = await fetch(
+                `http://localhost:8000/pid/namespaces/${id}/resources/${pid}`,
+                {
+                    credentials: "include",
+                }
             );
 
             if (!response.ok) {
@@ -57,10 +85,14 @@ export default function EditPID() {
 
             setResource(data);
 
-            setMetadata(data.metadata);
+            setMetadata(data.metadata || "");
 
         }
+        catch {
 
+            navigate(`/namespaces/${id}`);
+
+        }
         finally {
 
             setLoading(false);
@@ -73,34 +105,26 @@ export default function EditPID() {
 
         e.preventDefault();
 
-        const token = localStorage.getItem("access");
+        setError("");
 
         try {
 
             const response = await fetch(
-
                 `http://localhost:8000/pid/namespaces/${id}/resources/${pid}`,
-
                 {
-
                     method: "PATCH",
 
+                    credentials: "include",
+
                     headers: {
-
                         "Content-Type": "application/json",
-
-                        Authorization: `Bearer ${token}`
-
+                        "X-CSRFToken": getCookie("csrftoken"),
                     },
 
                     body: JSON.stringify({
-
-                        metadata
-
-                    })
-
+                        metadata,
+                    }),
                 }
-
             );
 
             if (!response.ok) {
@@ -112,7 +136,6 @@ export default function EditPID() {
             navigate(`/namespaces/${id}`);
 
         }
-
         catch {
 
             setError("Unable to update PID.");
@@ -127,47 +150,61 @@ export default function EditPID() {
 
     }
 
+    if (!resource) {
+
+        return <h2>PID not found.</h2>;
+
+    }
+
     return (
 
         <>
 
-            <Navbar />
+            <Navbar user={user} />
 
             <div className="edit-container">
 
                 <h1>Edit PID</h1>
 
-                <p><strong>PID:</strong> {resource.pid}</p>
+                <p>
+                    <strong>PID:</strong> {resource.pid}
+                </p>
 
-                <p><strong>Tag:</strong> {resource.tag}</p>
+                <p>
+                    <strong>Tags:</strong>{" "}
+                    {resource.tags?.join(", ") || ""}
+                </p>
 
-                <p><strong>URL:</strong> {resource.url}</p>
+                <p>
+                    <strong>URL:</strong>{" "}
+                    {resource.url}
+                </p>
 
                 <form onSubmit={save}>
 
                     <label>Metadata</label>
 
                     <textarea
-
                         rows="8"
-
                         value={metadata}
-
-                        onChange={(e)=>setMetadata(e.target.value)}
-
+                        onChange={(e) => setMetadata(e.target.value)}
                     />
 
-                    <button>
-
+                    <button type="submit">
                         Save Changes
-
                     </button>
 
                 </form>
 
-                {error && <p className="error">{error}</p>}
+                {error && (
+                    <p className="error">
+                        {error}
+                    </p>
+                )}
 
             </div>
+
+            <Footer />
 
         </>
 

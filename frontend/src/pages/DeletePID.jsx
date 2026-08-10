@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 import "../styles/DeletePID.css";
-
 import { getCookie } from "../utils/csrf";
 
 export default function DeletePID() {
@@ -15,133 +15,170 @@ export default function DeletePID() {
 
     const [resource, setResource] = useState(null);
 
+    const [error, setError] = useState("");
+
+    const [user, setUser] = useState(null);
+
+
     useEffect(() => {
+    
+            loadUser();
+    
+        }, []);
+    
+    
+    async function loadUser() {
 
+        try {
+
+            const response = await fetch(
+                "http://localhost:8000/pid/me",
+                {
+                    credentials: "include",
+                }
+            );
+
+            if (!response.ok) {
+                navigate("/");
+                return;
+            }
+
+            const data = await response.json();
+
+            setUser(data);
+
+        } catch {
+
+            navigate("/");
+
+        }
+
+    }
+
+    
+    useEffect(() => {
         loadPID();
-
     }, []);
 
     async function loadPID() {
 
-        const token = localStorage.getItem("access");
+        try {
 
-        const response = await fetch(
-
-            `http://localhost:8000/pid/namespaces/${id}/resources/${pid}`,
-
-            {
-
-                headers: {
-
-                    Authorization:`Bearer ${token}`
-
+            const response = await fetch(
+                `http://localhost:8000/pid/namespaces/${id}/resources/${pid}`,
+                {
+                    credentials: "include",
                 }
+            );
+
+            if (!response.ok) {
+
+                navigate(`/namespaces/${id}`);
+
+                return;
 
             }
 
-        );
+            const data = await response.json();
 
-        if(!response.ok){
+            setResource(data);
+
+        }
+        catch {
 
             navigate(`/namespaces/${id}`);
 
-            return;
-
         }
-
-        const data = await response.json();
-
-        setResource(data);
 
     }
 
     async function deletePID() {
 
-        const token = localStorage.getItem("access");
+        setError("");
 
-        const response = await fetch(
+        try {
 
-            `http://localhost:8000/pid/namespaces/${id}/resources/${pid}`,
-
-            {
-
-                method:"DELETE",
-
-                headers:{
-
-                    Authorization:`Bearer ${token}`
-
+            const response = await fetch(
+                `http://localhost:8000/pid/namespaces/${id}/resources/${pid}`,
+                {
+                    method: "DELETE",
+                    credentials: "include",
+                    headers: { "X-CSRFToken": getCookie("csrftoken"), },
                 }
+            );
+
+            if (!response.ok) {
+
+                throw new Error();
 
             }
 
-        );
-
-        if(response.ok){
-
             navigate(`/namespaces/${id}`);
+
+        }
+        catch {
+
+            setError("Unable to delete PID.");
 
         }
 
     }
 
-    if(!resource){
+    if (!resource) {
 
         return <h2>Loading...</h2>;
 
     }
 
-    return(
+    return (
 
         <>
 
-        <Navbar/>
+            <Navbar user={user} />
 
-        <div className="delete-container">
+            <div className="delete-container">
 
-            <h1>Delete PID</h1>
+                <h1>Delete PID</h1>
 
-            <p>
+                <p>
+                    Are you sure you want to delete
+                    <strong> {resource.pid}</strong>?
+                </p>
 
-                Are you sure you want to delete
+                <p>
+                    <strong>Tags:</strong>{" "}
+                    {resource.tags?.join(", ") || ""}
+                </p>
 
-                <strong> {resource.pid}</strong> ?
+                <div className="buttons">
 
-            </p>
+                    <button
+                        className="delete"
+                        onClick={deletePID}
+                    >
+                        Delete
+                    </button>
 
-            <div className="buttons">
+                    <button
+                        className="cancel"
+                        onClick={() =>
+                            navigate(`/namespaces/${id}`)
+                        }
+                    >
+                        Cancel
+                    </button>
 
-                <button
+                </div>
 
-                    className="delete"
-
-                    onClick={deletePID}
-
-                >
-
-                    Delete
-
-                </button>
-
-                <button
-
-                    className="cancel"
-
-                    onClick={()=>
-
-                        navigate(`/namespaces/${id}`)
-
-                    }
-
-                >
-
-                    Cancel
-
-                </button>
+                {error && (
+                    <p className="error">
+                        {error}
+                    </p>
+                )}
 
             </div>
 
-        </div>
+            <Footer />
 
         </>
 

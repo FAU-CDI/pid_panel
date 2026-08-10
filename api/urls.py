@@ -11,9 +11,4 @@ urlpatterns = [
         views.pid_detail,
         name="api_pid_detail",
     ),
-    path(
-        "namespaces/<str:namespace_id>/roles",
-        views.namespace_roles,
-        name="api_namespace_roles",
-    ),
 ]

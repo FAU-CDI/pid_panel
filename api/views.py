@@ -1,12 +1,11 @@
+from django.http import JsonResponse
+from django.middleware.csrf import get_token
+
 from rest_framework.decorators import api_view, permission_classes
-
 from rest_framework.permissions import IsAuthenticated
-
 from rest_framework.response import Response
 
-from django.contrib.auth.models import User
-
-from pidmanager.models import NamespacePermission, Role
+from accounts.utils import get_go_username
 
 from pidmanager.services.go_client import (
     list_namespaces,
@@ -15,111 +14,141 @@ from pidmanager.services.go_client import (
     create_pid,
     get_pid,
     update_pid,
+    list_namespace_roles,
+    get_namespace_role,
+    set_namespace_role,
+    delete_namespace_role,
+    get_namespace,
 )
-
-from django.http import JsonResponse
-
-from django.middleware.csrf import get_token
 
 
 @api_view(["GET"])
 def csrf(request):
     return JsonResponse({
-        "csrfToken": get_token(request)
+        "csrfToken": get_token(request),
     })
+
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def current_user(request):
 
-    return Response(
-        {"username": request.user.username, "is_superuser": request.user.is_superuser}
-    )
+    """
+        Return information about the currently authenticated Django user.
+    
+        Django is responsible for authentication.
+    """
 
+    go_username = get_go_username(request.user)
+
+    return Response({
+        "username": request.user.username,
+        "go_username": go_username,
+        "display_username": f"customer_{go_username}",
+        "is_superuser": request.user.is_superuser,
+    })
 
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def namespaces(request):
 
-    if request.method == "GET":
-        limit = int(request.GET.get("limit", 3))
+    go_username = get_go_username(request.user)
 
+    if request.method == "GET":
+
+        limit = int(request.GET.get("limit", 3))
         offset = int(request.GET.get("offset", 0))
 
-        go_data = list_namespaces(limit, offset)
-
-        next_offset = None
-
-        if offset + limit < go_data["total"]:
-            next_offset = offset + limit
-
-        previous_offset = None
-
-        if offset > 0:
-            previous_offset = max(0, offset - limit)
+        go_data = list_namespaces(
+            go_username,
+            limit,
+            offset,
+        )
 
         results = []
 
-        for ns in go_data["items"]:
-            assignment = NamespacePermission.objects.filter(
-                user=request.user, namespace=ns["id"]
-            ).first()
+        for namespace in go_data["items"]:
 
-            if assignment:
-                results.append(
-                    {"id": ns["id"], "tag": ns["tag"], "role": assignment.role}
+            try:
+                role_data = get_namespace_role(
+                    go_username,
+                    namespace["id"],
+                    go_username,
                 )
 
-        return Response(
-            {
-                "total": go_data["total"],
-                "limit": limit,
-                "offset": offset,
-                "next_offset": next_offset,
-                "previous_offset": previous_offset,
-                "count": len(results),
-                "results": results,
-            }
-        )
+                namespace["role"] = role_data.get("role")
+
+            except Exception:
+                namespace["role"] = None
+
+            results.append(namespace)
+
+        return Response({
+            "total": go_data["total"],
+            "limit": limit,
+            "offset": go_data["offset"],
+            "next_offset": (
+                offset + limit
+                if offset + limit < go_data["total"]
+                else None
+            ),
+            "previous_offset": (
+                max(0, offset - limit)
+                if offset > 0
+                else None
+            ),
+            "count": len(results),
+            "results": results,
+        })
 
     elif request.method == "POST":
+
         namespace = create_namespace(
-            request.data["tag"], request.data["pattern"], request.data["characters"]
+            go_username,
+            request.data["tag"],
+            request.data["pattern"],
+            request.data["characters"],
         )
 
-        NamespacePermission.set_role(request.user, namespace["id"], "manager")
-
         return Response(namespace, status=201)
-
 
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def resources(request, namespace_id):
 
-    if request.method == "GET":
-        limit = 3
+    go_username = get_go_username(request.user)
 
+    if request.method == "GET":
+
+        limit = int(request.GET.get("limit", 3))
         offset = int(request.GET.get("offset", 0))
 
-        namespaces = list_namespaces(limit=limit, offset=offset)
-
-        namespace = next(
-            (n for n in namespaces["items"] if n["id"] == namespace_id), None
+        namespace = get_namespace(
+            go_username,
+            namespace_id,
         )
 
-        if not namespace:
-            return Response({"error": "Namespace not found"}, status=404)
+        role_data = get_namespace_role(
+            go_username,
+            namespace_id,
+            go_username,
+        )
 
-        if not NamespacePermission.has_permission(
-            request.user, namespace["id"], "list"
-        ):
-            return Response({"error": "Permission denied"}, status=403)
+        # Add role to namespace object
+        namespace["role"] = role_data["role"]
 
         data = list_pids(
+            go_username,
             namespace_id,
             limit=limit,
             offset=offset,
         )
+
+        visible = [ 
+            pid 
+            for pid in data["items"] 
+            if not pid.get("deleted", False) 
+        ]
 
         next_offset = None
 
@@ -131,141 +160,121 @@ def resources(request, namespace_id):
         if offset > 0:
             previous_offset = max(0, offset - limit)
 
-        visible = [pid for pid in data["items"] if not pid["deleted"]]
+        return Response({
+            "namespace": namespace,
+            "total": data["total"],
+            "limit": limit,
+            "offset": offset,
+            "next_offset": next_offset,
+            "previous_offset": previous_offset,
+            "results": visible,
+        })
 
-        assignment = NamespacePermission.objects.filter(
-            user=request.user, namespace=namespace["id"]
-        ).first()
+    if request.method == "POST":
 
-        namespace["role"] = assignment.role if assignment else None
-
-        return Response(
-            {
-                "namespace": namespace,
-                "total": data["total"],
-                "limit": limit,
-                "offset": offset,
-                "next_offset": next_offset,
-                "previous_offset": previous_offset,
-                "count": len(visible),
-                "results": visible,
-            }
-        )
-
-    elif request.method == "POST":
-        result = create_pid(
+        data = create_pid(
+            go_username,
             namespace_id,
             request.data["url"],
             request.data["metadata"],
-            request.data["tag"],
+            request.data["tags"],
         )
-        return Response(result)
 
+        return Response(data, status=201)
 
 @api_view(["GET", "PATCH", "DELETE"])
+@permission_classes([IsAuthenticated])
 def pid_detail(request, namespace_id, pid):
+    """
+    Proxy individual PID operations to the Go backend.
 
-    data = get_pid(namespace_id, pid)
+    Django handles authentication and forwards the authenticated
+    user's Go username. Go handles authorization and PID logic.
+    """
+
+    go_username = get_go_username(request.user)
 
     if request.method == "GET":
-        if data["deleted"]:
-            return Response({"error": "PID has been deleted."}, status=410)
-
-        return Response(data)
-    elif request.method == "PATCH":
-        result = update_pid(
+        data = get_pid(
+            go_username,
             namespace_id,
             pid,
-            data["url"],
-            request.data["metadata"],
-            data["tag"],
-            data["deleted"],
         )
 
-        return Response(result)
+        return Response(data)
 
-    elif request.method == "DELETE":
-        update_pid(namespace_id, pid, data["url"], data["metadata"], data["tag"], True)
+    if request.method == "PATCH":
+        data = update_pid(
+            go_username,
+            namespace_id,
+            pid,
+            url=request.data.get("url"),
+            metadata=request.data.get("metadata"),
+            tags=request.data.get("tags"),
+            deleted=request.data.get("deleted"),
+        )
 
-    return Response({"message": "PID deleted"})
+        return Response(data)
+
+    if request.method == "DELETE":
+        data = update_pid(
+            go_username,
+            namespace_id,
+            pid,
+            deleted=True,
+        )
+
+        return Response(data)
 
 
 @api_view(["GET", "PUT", "DELETE"])
 @permission_classes([IsAuthenticated])
 def namespace_roles(request, namespace_id):
 
-    namespaces = list_namespaces()
-
-    namespace = next((n for n in namespaces["items"] if n["id"] == namespace_id), None)
-
-    if namespace is None:
-        return Response({"error": "Namespace not found"}, status=404)
-
-    if not NamespacePermission.has_permission(
-        request.user, namespace["id"], "manage_permissions"
-    ):
-        return Response({"error": "Permission denied"}, status=403)
+    go_username = get_go_username(request.user)
 
     if request.method == "GET":
-        assignments = NamespacePermission.objects.filter(
-            namespace=namespace["id"]
-        ).select_related("user")
-
-        results = [
-            {
-                "user_id": assignment.user.id,
-                "username": assignment.user.username,
-                "role": assignment.role,
-            }
-            for assignment in assignments
-        ]
-
         return Response(
-            {
-                "namespace": namespace["id"],
-                "count": len(results),
-                "results": results,
-            }
+            list_namespace_roles(
+                go_username,
+                namespace_id,
+            )
         )
 
     elif request.method == "PUT":
-        try:
-            target_user = User.objects.get(id=request.data["user_id"])
-        except User.DoesNotExist:
-            return Response({"error": "User not found"}, status=404)
-
-        if not request.user.is_superuser and target_user.id == request.user.id:
-            return Response(
-                {"error": "Managers cannot change their own role."}, status=403
-            )
-
+        target_user_id = request.data["user_id"]
         role = request.data["role"]
 
-        if role not in Role.values:
-            return Response({"error": "Invalid role"}, status=400)
-
-        NamespacePermission.set_role(target_user, namespace["id"], role)
-
-        return Response(
-            {
-                "message": "Role updated successfully",
-                "user_id": target_user.id,
-                "username": target_user.username,
-                "role": role,
-            }
-        )
-
-    elif request.method == "DELETE":
         try:
-            target_user = User.objects.get(id=request.data["user_id"])
+            target_user = User.objects.get(id=target_user_id)
         except User.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
 
-        if not request.user.is_superuser and target_user.id == request.user.id:
-            return Response(
-                {"error": "Managers cannot revoke their own role."}, status=403
-            )
+        target_go_username = get_go_username(target_user)
 
-        NamespacePermission.revoke_role(target_user, namespace["id"])
+        result = set_namespace_role(
+            go_username,
+            namespace_id,
+            target_go_username,
+            role,
+        )
 
-        return Response({"message": "Role revoked successfully"})
+        return Response(result)
+
+    elif request.method == "DELETE":
+        target_user_id = request.data["user_id"]
+
+        try:
+            target_user = User.objects.get(id=target_user_id)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=404)
+
+        target_go_username = get_go_username(target_user)
+
+        result = delete_namespace_role(
+            go_username,
+            namespace_id,
+            target_go_username,
+        )
+
+        return Response(result)

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Navbar from "../components/Navbar";
@@ -8,10 +8,13 @@ import "../styles/CreateNamespace.css";
 import { getCookie } from "../utils/csrf";
 
 import InfoTooltip from "../components/InfoTooltip";
+import Footer from "../components/Footer";
 
 export default function CreateNamespace() {
 
     const navigate = useNavigate();
+
+    const [user, setUser] = useState(null);
 
     const [tag, setTag] = useState("");
 
@@ -22,6 +25,43 @@ export default function CreateNamespace() {
     const [error, setError] = useState("");
 
     const [loading, setLoading] = useState(false);
+
+
+    useEffect(() => {
+
+        loadUser();
+
+    }, []);
+
+
+    async function loadUser() {
+
+        try {
+
+            const response = await fetch(
+                "http://localhost:8000/pid/me",
+                {
+                    credentials: "include",
+                }
+            );
+
+            if (!response.ok) {
+                navigate("/");
+                return;
+            }
+
+            const data = await response.json();
+
+            setUser(data);
+
+        } catch {
+
+            navigate("/");
+
+        }
+
+    }
+
 
     async function createNamespace(e) {
 
@@ -38,12 +78,12 @@ export default function CreateNamespace() {
                 {
                     method: "POST",
                     credentials: "include",
-                
+
                     headers: {
                         "Content-Type": "application/json",
                         "X-CSRFToken": getCookie("csrftoken"),
                     },
-                
+
                     body: JSON.stringify({
                         tag,
                         pattern,
@@ -53,22 +93,16 @@ export default function CreateNamespace() {
             );
 
             if (!response.ok) {
-
                 throw new Error();
-
             }
 
             navigate("/dashboard");
 
-        }
-
-        catch {
+        } catch {
 
             setError("Failed to create namespace.");
 
-        }
-
-        finally {
+        } finally {
 
             setLoading(false);
 
@@ -76,11 +110,19 @@ export default function CreateNamespace() {
 
     }
 
+
+    if (!user) {
+
+        return <h2>Loading...</h2>;
+
+    }
+
+
     return (
 
         <>
 
-            <Navbar />
+            <Navbar user={user} />
 
             <div className="create-container">
 
@@ -94,16 +136,13 @@ export default function CreateNamespace() {
                     </label>
 
                     <input
-
                         value={tag}
-
                         onChange={(e) =>
                             setTag(e.target.value)
                         }
-
                         required
-
                     />
+
 
                     <label>
                         PID Pattern
@@ -111,18 +150,14 @@ export default function CreateNamespace() {
                     </label>
 
                     <input
-
                         value={pattern}
-
                         onChange={(e) =>
                             setPattern(e.target.value)
                         }
-
                         placeholder="***-***"
-
                         required
-
                     />
+
 
                     <label>
                         Characters
@@ -130,76 +165,54 @@ export default function CreateNamespace() {
                     </label>
 
                     <select
-
                         value={characters}
-
                         onChange={(e) =>
                             setCharacters(e.target.value)
                         }
-
                     >
 
                         <option value="full">
-
                             Full
-
                         </option>
 
                         <option value="numeric">
-
                             Numeric
-
                         </option>
 
                         <option value="alphabetic">
-
                             Alphabetic
-
                         </option>
 
                         <option value="alphanumeric">
-
                             Alphanumeric
-
                         </option>
 
                     </select>
 
-                    <button
-                        disabled={loading}
-                    >
 
-                        {
+                    <button disabled={loading}>
 
-                            loading
-
-                            ?
-
-                            "Creating..."
-
-                            :
-
-                            "Create Namespace"
-
+                        {loading
+                            ? "Creating..."
+                            : "Create Namespace"
                         }
 
                     </button>
 
                 </form>
 
-                {
 
-                    error &&
+                {error &&
 
                     <p className="error">
-
                         {error}
-
                     </p>
 
                 }
 
             </div>
+
+            <Footer />
 
         </>
 
