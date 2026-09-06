@@ -1,65 +1,60 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import Navbar from "../components/Navbar";
-
-import "../styles/CreateNamespace.css";
-
-import { getCookie } from "../utils/csrf";
-
-import InfoTooltip from "../components/InfoTooltip";
 import Footer from "../components/Footer";
 
-export default function CreateNamespace() {
+import "../styles/EditNamespace.css";
 
+import InfoTooltip from "../components/InfoTooltip";
+import { getCookie } from "../utils/csrf";
+
+export default function EditNamespace() {
+
+    const { id } = useParams();
     const navigate = useNavigate();
 
-    const [user, setUser] = useState(null);
-
     const [tags, setTags] = useState([""]);
-
-    const [pattern, setPattern] = useState("");
-
-    const [characters, setCharacters] = useState("full");
-
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-    const [loading, setLoading] = useState(false);
-
-
     useEffect(() => {
-
-        loadUser();
-
+        loadNamespace();
     }, []);
 
-
-    async function loadUser() {
+    async function loadNamespace() {
 
         try {
 
             const response = await fetch(
-                "http://localhost:8000/pid/me",
+                `http://localhost:8000/pid/namespaces/${id}`,
                 {
                     credentials: "include",
                 }
             );
 
             if (!response.ok) {
-                navigate("/");
+                navigate("/dashboard");
                 return;
             }
 
             const data = await response.json();
 
-            setUser(data);
+            setTags(
+                data.tags && data.tags.length > 0
+                    ? data.tags
+                    : [""]
+            );
 
         } catch {
 
-            navigate("/");
+            setError("Unable to load namespace.");
+
+        } finally {
+
+            setLoading(false);
 
         }
-
     }
 
     function updateTag(index, value) {
@@ -101,16 +96,12 @@ export default function CreateNamespace() {
 
     }
 
-
-    async function createNamespace(e) {
+    async function save(e) {
 
         e.preventDefault();
 
-        setLoading(true);
-
         setError("");
 
-        // Remove empty tags before sending them.
         const cleanedTags = tags
             .map(tag => tag.trim())
             .filter(tag => tag.length > 0);
@@ -118,16 +109,17 @@ export default function CreateNamespace() {
         if (cleanedTags.length === 0) {
 
             setError("Please enter at least one tag.");
-
             return;
+
         }
 
         try {
 
             const response = await fetch(
-                "http://localhost:8000/pid/namespaces",
+                `http://localhost:8000/pid/namespaces/${id}`,
                 {
-                    method: "POST",
+                    method: "PATCH",
+
                     credentials: "include",
 
                     headers: {
@@ -136,10 +128,8 @@ export default function CreateNamespace() {
                     },
 
                     body: JSON.stringify({
-                        tags: cleanedTags,
-                        pattern,
-                        characters,
-                    }),
+                        tags: cleanedTags
+                    })
                 }
             );
 
@@ -147,42 +137,31 @@ export default function CreateNamespace() {
                 throw new Error();
             }
 
-            navigate("/dashboard");
+            navigate(`/namespaces/${id}`);
 
         } catch {
 
-            setError("Failed to create namespace.");
-
-        } finally {
-
-            setLoading(false);
+            setError("Unable to update namespace.");
 
         }
-
     }
 
-
-    if (!user) {
-
+    if (loading) {
         return <h2>Loading...</h2>;
-
     }
-
 
     return (
-
         <>
+            <Navbar />
 
-            <Navbar user={user} />
+            <div className="edit-namespace-container">
 
-            <div className="create-container">
+                <h1>Edit Namespace Tags</h1>
 
-                <h1>Create Namespace</h1>
-
-                <form onSubmit={createNamespace}>
+                <form onSubmit={save}>
 
                     <label>
-                        Namespace Tags
+                        Tags
                         <InfoTooltip text="Tags associated with this namespace." />
                     </label>
 
@@ -212,7 +191,6 @@ export default function CreateNamespace() {
                                     <button
                                         type="button"
                                         onClick={addTag}
-                                        className="tag-button"
                                     >
                                         +
                                     </button>
@@ -222,7 +200,6 @@ export default function CreateNamespace() {
                                     <button
                                         type="button"
                                         onClick={() => removeTag(index)}
-                                        className="tag-button"
                                     >
                                         −
                                     </button>
@@ -235,79 +212,28 @@ export default function CreateNamespace() {
 
                     </div>
 
+                    <button type="submit">
+                        Save Changes
+                    </button>
 
-                    <label>
-                        PID Pattern
-                        <InfoTooltip text="Defines the format of generated PIDs (e.g. ***-***)." />
-                    </label>
-
-                    <input
-                        value={pattern}
-                        onChange={(e) =>
-                            setPattern(e.target.value)
-                        }
-                        placeholder="***-***"
-                        required
-                    />
-
-
-                    <label>
-                        Characters
-                        <InfoTooltip text="Choose which types of characters can appear in generated PIDs." />
-                    </label>
-
-                    <select
-                        value={characters}
-                        onChange={(e) =>
-                            setCharacters(e.target.value)
-                        }
+                    <button
+                        type="button"
+                        onClick={() => navigate(`/namespaces/${id}`)}
                     >
-
-                        <option value="full">
-                            Full
-                        </option>
-
-                        <option value="numeric">
-                            Numeric
-                        </option>
-
-                        <option value="alphabetic">
-                            Alphabetic
-                        </option>
-
-                        <option value="alphanumeric">
-                            Alphanumeric
-                        </option>
-
-                    </select>
-
-
-                    <button disabled={loading}>
-
-                        {loading
-                            ? "Creating..."
-                            : "Create Namespace"
-                        }
-
+                        Cancel
                     </button>
 
                 </form>
 
-
                 {error &&
-
                     <p className="error">
                         {error}
                     </p>
-
                 }
 
             </div>
 
             <Footer />
-
         </>
-
     );
-
 }

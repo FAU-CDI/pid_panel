@@ -21,22 +21,21 @@ export default function NamespaceCard({ namespace }) {
         >
 
             <h2>
-
-                {namespace.tag}
-                <InfoTooltip text="This is the tag for your namespace." />
-
+                {namespace.id}
+                <strong>
+                    <InfoTooltip text="This is the unique keyword for your namespace." />
+                </strong>
+                
             </h2>
 
             <p>
-
                 <strong>
-                    ID
-                    <InfoTooltip text="This is the unique ID for your namespace." />
+                    Tags 
+                    <InfoTooltip text="These are the tags for your namespace." />
                 </strong>
-
                 <br/>
-
-                {namespace.id}
+                {namespace.tags.join(", ")}
+                <br/>
 
             </p>
 
@@ -50,6 +49,36 @@ export default function NamespaceCard({ namespace }) {
                 <br/>
 
                 {namespace.role}
+
+            </p>
+
+            <p>
+
+                <strong>
+                    Mount info
+                    <InfoTooltip text="This is the mount information for your namespace." />
+                </strong>
+
+                <br/>
+
+                {namespace.mounts?.length > 0 ? (
+                  <ul>
+                    {namespace.mounts.map((mount, index) => (
+                      <li key={index}>
+                        <a
+                            href={mount}
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            {mount}
+                        </a>
+                        
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>No mounts available</p>
+                )}
 
             </p>
 

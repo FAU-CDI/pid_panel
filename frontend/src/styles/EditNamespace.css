@@ -1,0 +1,59 @@
+.edit-namespace-container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 30px;
+}
+
+.edit-namespace-container h1 {
+    margin-bottom: 30px;
+}
+
+.edit-namespace-container label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.tags-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.tag-input-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tag-input-row input {
+    flex: 1;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.tag-input-row button {
+    width: 40px;
+    height: 40px;
+    font-size: 22px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.edit-namespace-container form > button {
+    padding: 12px 22px;
+    margin-right: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+}
+
+.error {
+    margin-top: 20px;
+    color: red;
+}

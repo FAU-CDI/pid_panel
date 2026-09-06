@@ -89,6 +89,12 @@ export default function NamespaceDetail() {
         ].includes(namespace.role);
     }
 
+    function canEditNamespace() {
+        return [
+            "manager"
+        ].includes(namespace.role);
+    }
+
     if (loading || !namespace) {
         return <h2>Loading...</h2>;
     }
@@ -101,11 +107,45 @@ export default function NamespaceDetail() {
 
                 <div className="namespace-header">
 
-                    <h1>{namespace.tag}</h1>
+                    <p><b> Namespace ID: {namespace.id}</b></p>
 
-                    <p>ID: {namespace.id}</p>
+                    <p>Tags: {namespace.tags?.join(", ") || ""}</p>
+
+                    {canEdit() &&
+                        <button className="edit-tags-button"
+                            onClick={() =>
+                                navigate(
+                                    `/namespaces/${id}/edit`
+                                )
+                            }
+                        >
+                            Edit Tags
+                        </button>
+                    }
 
                     <p>Your role: {namespace.role}</p>
+
+                    <p>
+                        Mount info:
+                        {namespace.mounts?.length > 0 ? (
+                            <ul>
+                                {namespace.mounts.map((mount, index) => (
+                                    <li key={index}>
+                                        <a
+                                            href={mount}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                        >
+                                            {mount}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p>No mounts available</p>
+                        )}
+        
+                    </p>
 
                 </div>
 

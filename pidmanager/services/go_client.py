@@ -29,9 +29,12 @@ def list_namespaces(username, limit=3, offset=0):
     return response.json()
 
 
-def create_namespace(username,tag, pattern, characters):
+def create_namespace(username,tags, pattern, characters):
 
-    payload = {"tag": tag, "pidFormat": {"pattern": pattern, "characters": characters}}
+    payload = {"tags": tags, "pidFormat": {
+        "pattern": pattern, 
+        "characters": characters
+        }}
 
     response = requests.post(
         f"{settings.GO_BACKEND_URL}/api/v2/resolver/namespaces", json=payload, headers=auth_headers(username)
@@ -45,6 +48,34 @@ def get_namespace(username, namespace_id):
 
     response = requests.get(
         f"{settings.GO_BACKEND_URL}/api/v2/resolver/namespaces/{namespace_id}",
+        headers=auth_headers(username),
+    )
+
+    response.raise_for_status()
+
+    return response.json()
+
+def update_namespace(username, namespace_id, tags=None):
+
+    payload = {}
+
+    if tags is not None:
+        payload["tags"] = tags
+
+    response = requests.patch(
+        f"{settings.GO_BACKEND_URL}/api/v2/resolver/namespaces/{namespace_id}",
+        json=payload,
+        headers=auth_headers(username),
+    )
+
+    response.raise_for_status()
+
+    return response.json()
+
+def get_mount_info(username, namespace_id):
+
+    response = requests.get(
+        f"{settings.GO_BACKEND_URL}/api/v2/resolver/namespaces/{namespace_id}/mounts",
         headers=auth_headers(username),
     )
 
@@ -192,3 +223,4 @@ def list_user_roles(username):
 
     response.raise_for_status()
     return response.json()
+

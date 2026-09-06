@@ -4,12 +4,15 @@ from django.middleware.csrf import get_token
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.contrib.auth.models import User
 
 from accounts.utils import get_go_username
 
 from pidmanager.services.go_client import (
     list_namespaces,
     create_namespace,
+    update_namespace,
+    get_mount_info,
     list_pids,
     create_pid,
     get_pid,
@@ -48,7 +51,7 @@ def current_user(request):
         "is_superuser": request.user.is_superuser,
     })
 
-@api_view(["GET", "POST"])
+@api_view(["GET", "POST", "PATCH"])
 @permission_classes([IsAuthenticated])
 def namespaces(request):
 
@@ -81,6 +84,26 @@ def namespaces(request):
             except Exception:
                 namespace["role"] = None
 
+            try:
+                mount_data = get_mount_info(
+                    go_username,
+                    namespace["id"],
+                )
+
+                print(
+                    f"MOUNTS FOR {namespace['id']}:",
+                    mount_data,
+                )
+
+                namespace["mounts"] = mount_data.get("items", [])
+
+            except Exception as e:
+                print(
+                    f"MOUNT ERROR FOR {namespace['id']}:",
+                    repr(e),
+                )
+                namespace["mounts"] = []
+
             results.append(namespace)
 
         return Response({
@@ -105,12 +128,67 @@ def namespaces(request):
 
         namespace = create_namespace(
             go_username,
-            request.data["tag"],
+            request.data["tags"],
             request.data["pattern"],
             request.data["characters"],
         )
 
         return Response(namespace, status=201)
+
+@api_view(["GET", "PATCH"])
+@permission_classes([IsAuthenticated])
+def namespace_detail(request, namespace_id):
+
+    go_username = get_go_username(request.user)
+
+    if request.method == "GET":
+
+        namespace = get_namespace(
+            go_username,
+            namespace_id,
+        )
+
+        try:
+            role_data = get_namespace_role(
+                go_username,
+                namespace_id,
+                go_username,
+            )
+
+            namespace["role"] = role_data.get("role")
+
+        except Exception:
+            namespace["role"] = None
+
+        try:
+            mount_data = get_mount_info(
+                go_username,
+                namespace_id,
+            )
+            namespace["mounts"] = mount_data.get("items", [])
+        except Exception:
+            namespace["mounts"] = []
+
+        return Response(namespace)
+
+    if request.method == "PATCH":
+
+        tags = request.data.get("tags")
+
+        if not isinstance(tags, list) or len(tags) == 0:
+            return Response(
+                {"error": "At least one tag is required."},
+                status=400,
+            )
+
+        namespace = update_namespace(
+            go_username,
+            namespace_id,
+            tags=tags,
+        )
+
+        return Response(namespace, status=200)
+
 
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
@@ -136,6 +214,17 @@ def resources(request, namespace_id):
 
         # Add role to namespace object
         namespace["role"] = role_data["role"]
+
+        # Mounts
+        try:
+            mount_data = get_mount_info(
+                go_username,
+                namespace_id,
+            )
+            namespace["mounts"] = mount_data.get("items", [])
+        except Exception as e:
+            print("MOUNT ERROR:", repr(e))
+            namespace["mounts"] = []
 
         data = list_pids(
             go_username,
