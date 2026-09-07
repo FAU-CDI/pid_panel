@@ -9,17 +9,23 @@ services:
       - "8000:8000"
 
     environment:
-      DJANGO_DEBUG: "True"
+      DJANGO_SETTINGS_MODULE: "pidproject.docker_settings"
+      DJANGO_SECRET_KEY: "${DJANGO_SECRET_KEY}"
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
+      DJANGO_CSRF_TRUSTED_ORIGINS: "http://localhost:5173"
 
-      GO_BACKEND_URL: "http://host.docker.internal:8080"
+      DJANGO_DB_ENGINE: "django.db.backends.sqlite3"
+      DJANGO_DB_NAME: "/data/db.sqlite3"
+
+      GO_BACKEND_URL: "http://backend:8080"
       GO_BACKEND_TOKEN: "${GO_BACKEND_TOKEN}"
 
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    depends_on:
+      - backend
 
     volumes:
       - .:/app
+      - django-data:/data
 
   frontend:
     build:
@@ -35,3 +41,19 @@ services:
 
     depends_on:
       - django
+
+  backend:
+    build:
+      context: ../quickpid
+      dockerfile: Dockerfile.sqlite
+
+    ports:
+      - "8080:8080"
+
+    volumes:
+      - quickpid-sqlite:/data
+
+
+volumes:
+  django-data:
+  quickpid-sqlite:
