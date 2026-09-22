@@ -1,86 +1,189 @@
-.create-container{
+.create-container {
 
-    width:500px;
+    width: 500px;
 
-    margin:50px auto;
+    margin: 50px auto;
 
-    background:white;
+    background: white;
 
-    padding:35px;
+    padding: 35px;
 
-    border-radius:12px;
+    border-radius: 12px;
 
-    box-shadow:0 4px 15px rgba(0,0,0,.1);
-
-}
-
-.create-container h1{
-
-    margin-bottom:30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, .1);
 
 }
 
-.create-container form{
+.create-container h1 {
 
-    display:flex;
-
-    flex-direction:column;
+    margin-bottom: 30px;
 
 }
 
-.create-container label{
+.create-container form {
 
-    margin-top:15px;
+    display: flex;
 
-    margin-bottom:5px;
+    flex-direction: column;
 
-    font-weight:600;
+}
+
+.create-container label {
+
+    margin-top: 15px;
+
+    margin-bottom: 5px;
+
+    font-weight: 600;
 
 }
 
 .create-container input,
-.create-container select{
+.create-container select {
 
-    padding:12px;
+    padding: 12px;
 
-    border:1px solid #ccc;
+    border: 1px solid #ccc;
 
-    border-radius:8px;
+    border-radius: 8px;
 
-    font-size:15px;
+    font-size: 15px;
 
-}
-
-.create-container button{
-
-    margin-top:30px;
-
-    padding:14px;
-
-    border:none;
-
-    background:#1976d2;
-
-    color:white;
-
-    border-radius:8px;
-
-    cursor:pointer;
-
-    font-size:16px;
+    box-sizing: border-box;
 
 }
 
-.create-container button:hover{
 
-    background:#145ea8;
+/* =========================
+   FORMAT SECTION
+   ========================= */
+
+.format-section {
+
+    margin-top: 25px;
+
+    padding: 20px;
+
+    border: 1px solid #d5d5d5;
+
+    border-radius: 10px;
+
+    background: #fafafa;
 
 }
 
-.error{
+.format-section h2 {
 
-    color:red;
+    margin: 0 0 15px 0;
 
-    margin-top:20px;
+    font-size: 20px;
+
+}
+
+
+/* Preset */
+
+.format-section label:first-of-type {
+
+    margin-top: 0;
+
+}
+
+
+/* Inputs inside Format */
+
+.format-section input,
+.format-section select {
+
+    width: 100%;
+
+}
+
+
+/* Create button */
+
+.create-container form > button {
+
+    margin-top: 30px;
+
+    padding: 14px;
+
+    border: none;
+
+    background: #1976d2;
+
+    color: white;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    font-size: 16px;
+
+}
+
+.create-container form > button:hover {
+
+    background: #145ea8;
+
+}
+
+.create-container form > button:disabled {
+
+    background: #9e9e9e;
+
+    cursor: not-allowed;
+
+}
+
+.sample-pid {
+
+    margin-top: 20px;
+
+    padding: 12px 15px;
+
+    background: white;
+
+    border: 1px solid #ddd;
+
+    border-radius: 8px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+}
+
+.sample-label {
+
+    font-size: 14px;
+
+    color: #666;
+
+    font-weight: 600;
+
+}
+
+.sample-value {
+
+    font-family: monospace;
+
+    font-size: 17px;
+
+    font-weight: 600;
+
+    letter-spacing: 1px;
+
+}
+
+/* Error */
+
+.error {
+
+    color: red;
+
+    margin-top: 20px;
 
 }

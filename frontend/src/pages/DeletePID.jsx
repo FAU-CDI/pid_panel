@@ -145,6 +145,13 @@ export default function DeletePID() {
                     <strong> {resource.pid}</strong>?
                 </p>
 
+                <p> 
+                    (
+                    <strong>Namespace:</strong>{" "}
+                    {id}
+                    )
+                </p>
+
                 <p>
                     <strong>Tags:</strong>{" "}
                     {resource.tags?.join(", ") || ""}

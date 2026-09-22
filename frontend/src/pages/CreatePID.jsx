@@ -135,7 +135,7 @@ export default function CreatePID() {
                     },
 
                     body: JSON.stringify({
-                        url,
+                        url: url.trim() === "" ? null : url.trim(),
                         metadata,
                         tags: cleanedTags,
                     })
@@ -226,7 +226,6 @@ export default function CreatePID() {
                     <input
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
-                        required
                     />
 
                     <label>

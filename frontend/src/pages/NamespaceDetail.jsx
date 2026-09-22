@@ -31,43 +31,41 @@ export default function NamespaceDetail() {
     async function loadNamespace(offset) {
 
         setLoading(true);
-        
+
         try {
-        
+
             const [userResponse, resourceResponse] = await Promise.all([
-            
+
                 fetch(
                     "http://localhost:8000/pid/me",
                     {
                         credentials: "include",
                     }
                 ),
-            
+
                 fetch(
                     `http://localhost:8000/pid/namespaces/${id}/resources?offset=${offset}`,
                     {
                         credentials: "include",
                     }
                 )
-            
+
             ]);
-        
+
             if (!resourceResponse.ok) {
                 navigate("/dashboard");
                 return;
             }
-        
+
             setUser(await userResponse.json());
-        
+
             const data = await resourceResponse.json();
-        
-            console.log(data);
-        
+
             setNamespace(data.namespace);
             setPids(data.results);
             setNextOffset(data.next_offset);
             setPreviousOffset(data.previous_offset);
-        
+
         }
         finally {
             setLoading(false);
@@ -95,6 +93,8 @@ export default function NamespaceDetail() {
         ].includes(namespace.role);
     }
 
+
+
     if (loading || !namespace) {
         return <h2>Loading...</h2>;
     }
@@ -107,26 +107,35 @@ export default function NamespaceDetail() {
 
                 <div className="namespace-header">
 
-                    <p><b> Namespace ID: {namespace.id}</b></p>
+                    <p>
+                        <b>Namespace ID: {namespace.id}</b>
+                    </p>
 
-                    <p>Tags: {namespace.tags?.join(", ") || ""}</p>
+                    <p>
+                        Tags: {namespace.tags?.join(", ") || ""}
+                    </p>
 
                     {canEdit() &&
-                        <button className="edit-tags-button"
+                        <button
+                            className="edit-tags-button"
                             onClick={() =>
-                                navigate(
-                                    `/namespaces/${id}/edit`
-                                )
+                                navigate(`/namespaces/${id}/edit`)
                             }
                         >
                             Edit Tags
                         </button>
                     }
 
-                    <p>Your role: {namespace.role}</p>
-
                     <p>
-                        Mount info:
+                        Your role: {namespace.role}
+                    </p>
+
+                    <div className="mount-info">
+
+                        <p>
+                            <b>Mount info:</b>
+                        </p>
+
                         {namespace.mounts?.length > 0 ? (
                             <ul>
                                 {namespace.mounts.map((mount, index) => (
@@ -144,15 +153,14 @@ export default function NamespaceDetail() {
                         ) : (
                             <p>No mounts available</p>
                         )}
-        
-                    </p>
+
+                    </div>
 
                 </div>
 
                 <table className="pid-table">
 
                     <thead>
-
                         <tr>
 
                             <th>
@@ -170,20 +178,7 @@ export default function NamespaceDetail() {
                                 <InfoTooltip text="This is the URL that the PID will resolve to." />
                             </th>
 
-                            <th>
-                                Metadata
-                                <InfoTooltip text="Additional information about the PID." />
-                            </th>
-
-                            {canEdit() &&
-                                <th>
-                                    Actions
-                                    <InfoTooltip text="Actions you can take on the PID." />
-                                </th>
-                            }
-
                         </tr>
-
                     </thead>
 
                     <tbody>
@@ -192,7 +187,18 @@ export default function NamespaceDetail() {
 
                             <tr key={pid.pid}>
 
-                                <td>{pid.pid}</td>
+                                <td>
+                                    <button
+                                        className="pid-link"
+                                        onClick={() =>
+                                            navigate(
+                                                `/namespaces/${id}/resources/${pid.pid}`
+                                            )
+                                        }
+                                    >
+                                        {pid.pid}
+                                    </button>
+                                </td>
 
                                 <td>
                                     {pid.tags?.join(", ") || ""}
@@ -207,34 +213,6 @@ export default function NamespaceDetail() {
                                         {pid.url}
                                     </a>
                                 </td>
-
-                                <td>{pid.metadata}</td>
-
-                                {canEdit() &&
-                                    <td>
-
-                                        <button
-                                            onClick={() =>
-                                                navigate(
-                                                    `/namespaces/${id}/resources/${pid.pid}/edit`
-                                                )
-                                            }
-                                        >
-                                            Edit
-                                        </button>
-
-                                        <button
-                                            onClick={() =>
-                                                navigate(
-                                                    `/namespaces/${id}/resources/${pid.pid}/delete`
-                                                )
-                                            }
-                                        >
-                                            Delete
-                                        </button>
-
-                                    </td>
-                                }
 
                             </tr>
 
@@ -264,6 +242,7 @@ export default function NamespaceDetail() {
                 }
 
             </div>
+
             <Footer />
         </>
     );

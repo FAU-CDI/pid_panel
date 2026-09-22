@@ -1,0 +1,128 @@
+.pid-detail-page {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 0 24px;
+}
+
+.pid-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.pid-detail-header > button {
+    padding: 8px 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+}
+
+.pid-detail-header > button:hover {
+    background: #f5f5f5;
+}
+
+.pid-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.pid-actions button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.pid-actions button:first-child {
+    background: #2563eb;
+    color: white;
+}
+
+.pid-actions button:last-child {
+    background: #dc2626;
+    color: white;
+}
+
+.pid-actions button:hover {
+    opacity: 0.9;
+}
+
+.pid-detail-card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.pid-detail-card h1 {
+    margin-top: 0;
+    margin-bottom: 30px;
+}
+
+.pid-field {
+    margin-bottom: 24px;
+}
+
+.pid-field:last-child {
+    margin-bottom: 0;
+}
+
+.pid-field strong {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 15px;
+}
+
+.pid-field p {
+    margin: 0;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.pid-field a {
+    color: #2563eb;
+    text-decoration: none;
+}
+
+.pid-field a:hover {
+    text-decoration: underline;
+}
+
+.namespace-link {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #2563eb;
+    cursor: pointer;
+    font: inherit;
+    text-decoration: underline;
+}
+
+@media (max-width: 700px) {
+
+    .pid-detail-page {
+        margin: 20px auto;
+        padding: 0 16px;
+    }
+
+    .pid-detail-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+
+    .pid-actions {
+        width: 100%;
+    }
+
+    .pid-actions button {
+        flex: 1;
+    }
+
+    .pid-detail-card {
+        padding: 20px;
+    }
+}

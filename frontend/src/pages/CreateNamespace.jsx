@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Navbar from "../components/Navbar";
-
 import "../styles/CreateNamespace.css";
 
 import { getCookie } from "../utils/csrf";
@@ -22,9 +21,13 @@ export default function CreateNamespace() {
 
     const [characters, setCharacters] = useState("full");
 
+    const [preset, setPreset] = useState("");
+
     const [error, setError] = useState("");
 
     const [loading, setLoading] = useState(false);
+
+    const [samplePid, setSamplePid] = useState("");
 
 
     useEffect(() => {
@@ -61,6 +64,66 @@ export default function CreateNamespace() {
         }
 
     }
+    useEffect(() => {
+
+        setSamplePid(
+            generateSamplePid(pattern, characters)
+        );
+
+    }, [pattern, characters]);
+
+    function generateSamplePid(currentPattern, currentCharacters) {
+
+        if (!currentPattern) {
+            return "";
+        }
+
+        let characterSet = "";
+
+        switch (currentCharacters) {
+
+            case "numeric":
+                characterSet = "0123456789";
+                break;
+
+            case "alphabetic":
+                characterSet = "abcdefghijklmnopqrstuvwxyz";
+                break;
+
+            case "alphanumeric":
+                characterSet =
+                    "abcdefghijklmnopqrstuvwxyz0123456789";
+                break;
+
+            case "full":
+            default:
+                characterSet =
+                    "abcdefghijklmnopqrstuvwxyz0123456789";
+                break;
+        }
+
+        let result = "";
+
+        for (const character of currentPattern) {
+
+            if (character === "*") {
+
+                const randomIndex = Math.floor(
+                    Math.random() * characterSet.length
+                );
+
+                result += characterSet[randomIndex];
+
+            } else {
+
+                result += character;
+
+            }
+
+        }
+
+        return result;
+    }
 
     function updateTag(index, value) {
 
@@ -76,6 +139,7 @@ export default function CreateNamespace() {
 
     }
 
+
     function addTag() {
 
         setTags(previousTags => [
@@ -84,6 +148,7 @@ export default function CreateNamespace() {
         ]);
 
     }
+
 
     function removeTag(index) {
 
@@ -102,6 +167,35 @@ export default function CreateNamespace() {
     }
 
 
+    function handlePresetChange(e) {
+
+        const selectedPreset = e.target.value;
+
+        setPreset(selectedPreset);
+
+        if (selectedPreset === "fau-default") {
+
+            setPattern("***-***");
+
+            setCharacters("full");
+
+        }
+
+        if (selectedPreset === "full") {
+
+            setPattern("*******");
+
+            setCharacters("full");
+
+        }
+
+        // Reset preset back to blank after applying it.
+        // This allows the user to customize the fields afterwards.
+        setPreset("");
+
+    }
+
+
     async function createNamespace(e) {
 
         e.preventDefault();
@@ -110,7 +204,6 @@ export default function CreateNamespace() {
 
         setError("");
 
-        // Remove empty tags before sending them.
         const cleanedTags = tags
             .map(tag => tag.trim())
             .filter(tag => tag.length > 0);
@@ -119,7 +212,10 @@ export default function CreateNamespace() {
 
             setError("Please enter at least one tag.");
 
+            setLoading(false);
+
             return;
+
         }
 
         try {
@@ -236,50 +332,102 @@ export default function CreateNamespace() {
                     </div>
 
 
-                    <label>
-                        PID Pattern
-                        <InfoTooltip text="Defines the format of generated PIDs (e.g. ***-***)." />
-                    </label>
+                    {/* FORMAT SECTION */}
 
-                    <input
-                        value={pattern}
-                        onChange={(e) =>
-                            setPattern(e.target.value)
-                        }
-                        placeholder="***-***"
-                        required
-                    />
+                    <div className="format-section">
 
-
-                    <label>
-                        Characters
-                        <InfoTooltip text="Choose which types of characters can appear in generated PIDs." />
-                    </label>
-
-                    <select
-                        value={characters}
-                        onChange={(e) =>
-                            setCharacters(e.target.value)
-                        }
-                    >
-
-                        <option value="full">
-                            Full
-                        </option>
-
-                        <option value="numeric">
-                            Numeric
-                        </option>
-
-                        <option value="alphabetic">
-                            Alphabetic
-                        </option>
-
-                        <option value="alphanumeric">
-                            Alphanumeric
-                        </option>
-
-                    </select>
+                        <h2>
+                            Format
+                            <InfoTooltip text="Define the format of generated PIDs." />
+                        </h2>
+                                        
+                                        
+                        <label htmlFor="preset">
+                            Use preset
+                        </label>
+                                        
+                        <select
+                            id="preset"
+                            value={preset}
+                            onChange={handlePresetChange}
+                        >
+                        
+                            <option value="">
+                                Select a preset
+                            </option>
+                                        
+                            <option value="fau-default">
+                                FAU default
+                            </option>
+                                        
+                            <option value="full">
+                                Full
+                            </option>
+                                        
+                        </select>
+                                        
+                                        
+                        <label htmlFor="pattern">
+                            PID Pattern
+                            <InfoTooltip text="Defines the format of generated PIDs (e.g. ***-***)." />
+                        </label>
+                                        
+                        <input
+                            id="pattern"
+                            value={pattern}
+                            onChange={(e) =>
+                                setPattern(e.target.value)
+                            }
+                            placeholder="***-***"
+                            required
+                        />
+                    
+                        
+                        <label htmlFor="characters">
+                            Characters
+                            <InfoTooltip text="Choose which types of characters can appear in generated PIDs." />
+                        </label>
+                        
+                        <select
+                            id="characters"
+                            value={characters}
+                            onChange={(e) =>
+                                setCharacters(e.target.value)
+                            }
+                        >
+                        
+                            <option value="full">
+                                Full
+                            </option>
+                        
+                            <option value="numeric">
+                                Numeric
+                            </option>
+                        
+                            <option value="alphabetic">
+                                Alphabetic
+                            </option>
+                        
+                            <option value="alphanumeric">
+                                Alphanumeric
+                            </option>
+                        
+                        </select>
+                        
+                        
+                        <div className="sample-pid">
+                        
+                            <span className="sample-label">
+                                Example
+                            </span>
+                        
+                            <span className="sample-value">
+                                {samplePid || "—"}
+                            </span>
+                        
+                        </div>
+                        
+                    </div>
 
 
                     <button disabled={loading}>
