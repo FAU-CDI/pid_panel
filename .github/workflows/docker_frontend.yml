@@ -1,4 +1,4 @@
-name: Publish Backend Docker Image
+name: Publish Frontend Docker Image
 
 on:
   push:
@@ -9,7 +9,7 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_PREFIX: fau-cdi/pid_panel
+  IMAGE_PREFIX: fau-cdi/pid_panel_frontend
   PLATFORMS: linux/amd64,linux/arm64
 
 jobs:
@@ -42,6 +42,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: ${{ env.PLATFORMS }}
-          file: ./Dockerfile
+          file: ./frontend/Dockerfile
+          context: ./frontend
           pull: true
           push: true

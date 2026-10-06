@@ -32,3 +32,5 @@ Dockerfile
 docker-compose.yml
 
 pidproject/local_settings.py
+
+frontend/
