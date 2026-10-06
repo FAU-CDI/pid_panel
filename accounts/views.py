@@ -28,12 +28,21 @@ def login(request):
         redirect_uri,
     )
 
-
 def callback(request):
 
     token = oauth.keycloak.authorize_access_token(request)
 
     userinfo = token["userinfo"]
+
+    print("KEYCLOAK USERINFO:", userinfo)
+
+    # Keycloak group membership
+    groups = userinfo.get("groups", [])
+
+    required_group = settings.KEYCLOAK_ALLOWED_GROUP
+
+    if required_group not in groups:
+        return redirect("http://localhost:5173/?error=not_authorized")
 
     preferred = userinfo["preferred_username"]
     email = userinfo.get("email", "")

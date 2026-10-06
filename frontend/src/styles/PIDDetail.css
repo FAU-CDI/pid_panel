@@ -1,5 +1,5 @@
 .pid-detail-page {
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 40px auto;
     padding: 0 24px;
 }
@@ -53,17 +53,20 @@
     background: white;
     border: 1px solid #ddd;
     border-radius: 10px;
-    padding: 30px;
+
+    /* More horizontal, less vertical */
+    padding: 25px 200px;
+
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .pid-detail-card h1 {
     margin-top: 0;
-    margin-bottom: 30px;
+    margin-bottom: 28px;
 }
 
 .pid-field {
-    margin-bottom: 24px;
+    margin-bottom: 18px;
 }
 
 .pid-field:last-child {
@@ -72,7 +75,7 @@
 
 .pid-field strong {
     display: block;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
     font-size: 15px;
 }
 
@@ -123,6 +126,6 @@
     }
 
     .pid-detail-card {
-        padding: 20px;
+        padding: 20px 24px;
     }
 }

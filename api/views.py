@@ -22,6 +22,9 @@ from pidmanager.services.go_client import (
     set_namespace_role,
     delete_namespace_role,
     get_namespace,
+    create_api_key,
+    list_api_keys,
+    revoke_api_key,
 )
 
 
@@ -367,3 +370,58 @@ def namespace_roles(request, namespace_id):
         )
 
         return Response(result)
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def profile_keys(request):
+    go_username = get_go_username(request.user)
+
+    if request.method == "GET":
+        limit = int(request.GET.get("limit", 20))
+        offset = int(request.GET.get("offset", 0))
+
+        data = list_api_keys(
+            go_username,
+            limit=limit,
+            offset=offset,
+        )
+
+        return Response(data)
+
+    if request.method == "POST":
+        comment = request.data.get("comment", "")
+        user_scopes = request.data.get("userScopes", [])
+        namespace_scopes = request.data.get("namespaceScopes", [])
+        expires_at = request.data.get("expiresAt")
+
+        data = create_api_key(
+            go_username,
+            comment=comment,
+            user_scopes=user_scopes,
+            namespace_scopes=namespace_scopes,
+            expires_at=expires_at,
+        )
+
+        return Response(data, status=201)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def revoke_profile_key(request):
+    go_username = get_go_username(request.user)
+
+    key_id = request.data.get("id")
+
+    if not key_id:
+        return Response(
+            {"error": "API key id is required."},
+            status=400,
+        )
+
+    data = revoke_api_key(
+        go_username,
+        key_id,
+    )
+
+    return Response(status=204)

@@ -9,6 +9,7 @@ import CreatePID from "./pages/CreatePID";
 import PIDDetail from "./pages/PIDDetail";
 import EditPID from "./pages/EditPID";
 import DeletePID from "./pages/DeletePID";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/namespaces/:id/resources/:pid" element={<PIDDetail />}/>
         <Route path="/namespaces/:id/resources/:pid/edit" element={<EditPID />} />
         <Route path="/namespaces/:id/resources/:pid/delete" element={<DeletePID />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </BrowserRouter>
   );

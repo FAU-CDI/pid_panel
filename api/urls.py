@@ -16,4 +16,14 @@ urlpatterns = [
         views.pid_detail,
         name="api_pid_detail",
     ),
+    path(
+        "profile/keys",
+        views.profile_keys,
+        name="profile_keys",
+    ),
+    path(
+        "profile/keys/revoke",
+        views.revoke_profile_key,
+        name="revoke_profile_key",
+    ),
 ]

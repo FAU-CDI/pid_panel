@@ -42,7 +42,7 @@
 }
 
 .navbar button {
-    background-color: #dc2626;
+    background-color: #90bbe1;
     color: white;
 
     border: none;
@@ -58,9 +58,50 @@
 }
 
 .navbar button:hover {
-    background-color: #b91c1c;
+    background-color: #53a5e3;
 }
 
 .navbar button:active {
     transform: scale(0.98);
+}
+
+.profile-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    background: none;
+    border: none;
+    padding: 6px 8px;
+
+    cursor: pointer;
+    color: inherit;
+
+    font: inherit;
+}
+
+.profile-button:hover {
+    opacity: 0.8;
+}
+
+.profile-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.profile-username {
+    font-weight: 500;
+}
+
+.navbar .navbar-right .logout {
+    background-color: #cd4f4f;
+}
+.navbar .navbar-right .logout:hover {
+    background-color: #9b291f;
 }

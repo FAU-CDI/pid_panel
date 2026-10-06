@@ -224,3 +224,53 @@ def list_user_roles(username):
     response.raise_for_status()
     return response.json()
 
+def create_api_key(
+    username,
+    comment,
+    expires_at=None,
+    user_scopes=None,
+    namespace_scopes=None,
+):
+    payload = {
+        "comment": comment,
+        "userScopes": user_scopes or [],
+        "namespaceScopes": namespace_scopes or [],
+    }
+
+    if expires_at:
+        payload["expiresAt"] = expires_at
+
+    response = requests.post(
+        f"{settings.GO_BACKEND_URL}/api/v2/user/key",
+        json=payload,
+        headers=auth_headers(username),
+    )
+    response.raise_for_status()
+    return response.json()
+
+
+
+def list_api_keys(username, limit=20, offset=0):
+    response = requests.get(
+        f"{settings.GO_BACKEND_URL}/api/v2/user/key",
+        params={
+            "limit": limit,
+            "offset": offset,
+        },
+        headers=auth_headers(username),
+    )
+    response.raise_for_status()
+    return response.json()
+
+
+def revoke_api_key(username, key_id):
+    response = requests.post(
+        f"{settings.GO_BACKEND_URL}/api/v2/user/key/revoke",
+        json={
+            "id": key_id,
+        },
+        headers=auth_headers(username),
+    )
+    response.raise_for_status()
+    return
+
