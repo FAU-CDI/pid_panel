@@ -14,6 +14,8 @@ ALLOWED_HOSTS = [
     if host
 ]
 
+
+
 CSRF_TRUSTED_ORIGINS = [
     origin
     for origin in os.environ.get(
@@ -24,6 +26,33 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "")
+GO_BACKEND_TOKEN = os.environ.get("GO_BACKEND_TOKEN", "")
+
+KEYCLOAK_CLIENT_ID = os.environ.get("KEYCLOAK_CLIENT_ID", "") 
+KEYCLOAK_CLIENT_SECRET = os.environ.get("KEYCLOAK_CLIENT_SECRET", "") 
+KEYCLOAK_SERVER_METADATA_URL = os.environ.get( "KEYCLOAK_SERVER_METADATA_URL", "", )
+
+if KEYCLOAK_CLIENT_ID:
+    AUTHLIB_OAUTH_CLIENTS = {
+
+    "keycloak": {
+
+        "client_id": KEYCLOAK_CLIENT_ID,
+
+        "client_secret": KEYCLOAK_CLIENT_SECRET,
+
+        "server_metadata_url":
+            KEYCLOAK_SERVER_METADATA_URL,
+
+        "client_kwargs": {
+
+            "scope": "openid profile email"
+
+        }
+
+    }
+}
+
 
 
 DATABASES = {
