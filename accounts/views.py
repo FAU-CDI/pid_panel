@@ -11,12 +11,14 @@ from accounts.utils import generate_go_username
 from pidmanager.services.go_client import create_go_user
 from accounts.utils import get_go_username
 
-oauth = OAuth()
 
-oauth.register(
-    "keycloak",
-    **settings.AUTHLIB_OAUTH_CLIENTS["keycloak"],
-)
+
+if "keycloak" in settings.AUTHLIB_OAUTH_CLIENTS:
+    oauth = OAuth()
+    oauth.register(
+        "keycloak",
+        **settings.AUTHLIB_OAUTH_CLIENTS["keycloak"],
+    )
 
 
 def login(request):

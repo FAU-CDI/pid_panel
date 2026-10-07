@@ -1,3 +1,16 @@
+FROM node:22-alpine AS frontend
+
+WORKDIR /app
+
+COPY frontend/package.json ./
+COPY frontend/package-lock.json ./
+
+RUN npm ci
+
+COPY frontend/ .
+
+RUN npm run build
+
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -39,5 +52,8 @@ VOLUME /data
 EXPOSE 8000
 
 ENTRYPOINT ["/entrypoint.sh"]
+
+COPY --from=frontend /app/dist /var/www/frontend/ 
+RUN ls /var/www/frontend/ 
 
 CMD ["uwsgi", "--ini", "/app/uwsgi.ini"]

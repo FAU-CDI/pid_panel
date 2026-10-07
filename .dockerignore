@@ -33,4 +33,5 @@ docker-compose.yml
 
 pidproject/local_settings.py
 
-frontend/
+frontend/node_modules
+frontend/dist
