@@ -25,7 +25,7 @@ export default function CreatePID() {
     const [error, setError] = useState("");
 
     const [user, setUser] = useState(null);
-
+    
     useEffect(() => {
     
             loadUser();
@@ -38,7 +38,7 @@ export default function CreatePID() {
         try {
 
             const response = await fetch(
-                "http://localhost:8000/pid/me",
+                "/pid/me",
                 {
                     credentials: "include",
                 }
@@ -123,7 +123,7 @@ export default function CreatePID() {
         try {
 
             const response = await fetch(
-                `http://localhost:8000/pid/namespaces/${id}/resources`,
+                `/pid/namespaces/${id}/resources`,
                 {
                     method: "POST",
 

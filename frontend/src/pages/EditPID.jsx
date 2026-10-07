@@ -41,7 +41,7 @@ export default function EditPID() {
         try {
 
             const response = await fetch(
-                "http://localhost:8000/pid/me",
+                "/pid/me",
                 {
                     credentials: "include",
                 }
@@ -77,7 +77,7 @@ export default function EditPID() {
         try {
 
             const response = await fetch(
-                `http://localhost:8000/pid/namespaces/${id}/resources/${pid}`,
+                `/pid/namespaces/${id}/resources/${pid}`,
                 {
                     credentials: "include",
                 }
@@ -184,7 +184,7 @@ export default function EditPID() {
         try {
 
             const response = await fetch(
-                `http://localhost:8000/pid/namespaces/${id}/resources/${pid}`,
+                `/pid/namespaces/${id}/resources/${pid}`,
                 {
                     method: "PATCH",
 

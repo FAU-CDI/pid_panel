@@ -19,6 +19,7 @@ export default function Profile() {
 
     const [newKey, setNewKey] = useState(null);
 
+
     useEffect(() => {
         loadProfile();
         loadApiKeys();
@@ -27,7 +28,7 @@ export default function Profile() {
     async function loadProfile() {
         try {
             const response = await fetch(
-                "http://localhost:8000/pid/me",
+                "/pid/me",
                 {
                     credentials: "include",
                 }
@@ -49,7 +50,7 @@ export default function Profile() {
     async function loadApiKeys() {
         try {
             const response = await fetch(
-                "http://localhost:8000/pid/profile/keys",
+                "/pid/profile/keys",
                 {
                     credentials: "include",
                 }
@@ -82,7 +83,7 @@ export default function Profile() {
             };
 
             const response = await fetch(
-                "http://localhost:8000/pid/profile/keys",
+                "/pid/profile/keys",
                 {
                     method: "POST",
                     credentials: "include",
@@ -123,7 +124,7 @@ export default function Profile() {
 
     async function getCsrfToken() {
         const response = await fetch(
-            "http://localhost:8000/pid/csrf",
+            "/pid/csrf",
             {
                 credentials: "include",
             }
@@ -153,7 +154,7 @@ export default function Profile() {
             const csrfToken = await getCsrfToken();
 
             const response = await fetch(
-                "http://localhost:8000/pid/profile/keys/revoke",
+                "/pid/profile/keys/revoke",
                 {
                     method: "POST",
                     credentials: "include",

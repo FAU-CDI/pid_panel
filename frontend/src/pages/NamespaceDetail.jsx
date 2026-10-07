@@ -37,14 +37,14 @@ export default function NamespaceDetail() {
             const [userResponse, resourceResponse] = await Promise.all([
 
                 fetch(
-                    "http://localhost:8000/pid/me",
+                    "/pid/me",
                     {
                         credentials: "include",
                     }
                 ),
 
                 fetch(
-                    `http://localhost:8000/pid/namespaces/${id}/resources?offset=${offset}`,
+                    `/pid/namespaces/${id}/resources?offset=${offset}`,
                     {
                         credentials: "include",
                     }

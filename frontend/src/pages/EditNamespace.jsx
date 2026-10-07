@@ -27,7 +27,7 @@ export default function EditNamespace() {
         try {
 
             const response = await fetch(
-                `http://localhost:8000/pid/namespaces/${id}`,
+                `/pid/namespaces/${id}`,
                 {
                     credentials: "include",
                 }
@@ -116,7 +116,7 @@ export default function EditNamespace() {
         try {
 
             const response = await fetch(
-                `http://localhost:8000/pid/namespaces/${id}`,
+                `/pid/namespaces/${id}`,
                 {
                     method: "PATCH",
 

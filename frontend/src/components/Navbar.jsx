@@ -7,7 +7,7 @@ export default function Navbar({ user }) {
     const navigate = useNavigate();
 
     const onLogout = () => {
-        window.location.href = "http://localhost:8000/auth/logout/";
+        window.location.href = "/auth/logout/";
     };
 
     return (

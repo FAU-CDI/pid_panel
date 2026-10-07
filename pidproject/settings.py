@@ -132,6 +132,7 @@ STATIC_URL = "static/"
 
 # Go backend configuration
 GO_BACKEND_URL = "http://127.0.0.1:8080"
+FRONTEND_URL = "http://localhost:5173"
 CORS_ALLOW_CREDENTIALS = True
 
 try:

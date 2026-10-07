@@ -34,12 +34,12 @@ export default function Dashboard() {
 
             const [userResponse, namespaceResponse] = await Promise.all([
 
-                fetch("http://localhost:8000/pid/me", {
+                fetch("/pid/me", {
                     credentials: "include",
                 }),
 
                 fetch(
-                    `http://localhost:8000/pid/namespaces?offset=${currentOffset}`,
+                    `/pid/namespaces?offset=${currentOffset}`,
                     {
                         credentials: "include",
                     }
@@ -91,7 +91,7 @@ export default function Dashboard() {
     async function logout() {
 
         await fetch(
-            "http://localhost:8000/auth/logout/",
+            `${API_BASE_URL}/auth/logout/`,
             {
                 credentials: "include",
             }

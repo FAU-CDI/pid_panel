@@ -29,7 +29,6 @@ export default function CreateNamespace() {
 
     const [samplePid, setSamplePid] = useState("");
 
-
     useEffect(() => {
 
         loadUser();
@@ -42,7 +41,7 @@ export default function CreateNamespace() {
         try {
 
             const response = await fetch(
-                "http://localhost:8000/pid/me",
+                "/pid/me",
                 {
                     credentials: "include",
                 }
@@ -221,7 +220,7 @@ export default function CreateNamespace() {
         try {
 
             const response = await fetch(
-                "http://localhost:8000/pid/namespaces",
+                "/pid/namespaces",
                 {
                     method: "POST",
                     credentials: "include",

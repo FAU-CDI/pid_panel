@@ -5,7 +5,7 @@ export default function Login() {
     function login() {
 
         window.location.href =
-            "http://localhost:8000/auth/login/";
+            "/auth/login/";
 
     }
 

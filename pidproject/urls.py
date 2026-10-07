@@ -16,7 +16,8 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
+from .views import frontend
 
 urlpatterns = [
 
@@ -25,5 +26,8 @@ urlpatterns = [
     path("", include("accounts.urls")),
 
     path("pid/", include("api.urls")),
+    
+    # React SPA fallback 
+    re_path(r"^frontend(?:/.*)?$", frontend),
 
 ]

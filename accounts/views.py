@@ -43,8 +43,8 @@ def callback(request):
 
     required_group = settings.KEYCLOAK_ALLOWED_GROUP
 
-    if required_group not in groups:
-        return redirect("http://localhost:5173/?error=not_authorized")
+    if required_group not in groups: 
+        return redirect( f"{settings.FRONTEND_URL}/?error=not_authorized" )
 
     preferred = userinfo["preferred_username"]
     email = userinfo.get("email", "")
@@ -74,11 +74,11 @@ def callback(request):
 
     django_login(request, user)
 
-    return redirect("http://localhost:5173/dashboard")
+    return redirect(f"{settings.FRONTEND_URL}/dashboard")
 
 
 def logout(request):
 
     django_logout(request)
 
-    return redirect("http://localhost:5173/")
+    return redirect(f"{settings.FRONTEND_URL}/")

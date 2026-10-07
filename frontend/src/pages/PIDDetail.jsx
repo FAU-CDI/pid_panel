@@ -35,21 +35,21 @@ export default function PIDDetail() {
             ] = await Promise.all([
 
                 fetch(
-                    "http://localhost:8000/pid/me",
+                    "/pid/me",
                     {
                         credentials: "include",
                     }
                 ),
 
                 fetch(
-                    `http://localhost:8000/pid/namespaces/${id}/resources/${pid}`,
+                    `/pid/namespaces/${id}/resources/${pid}`,
                     {
                         credentials: "include",
                     }
                 ),
 
                 fetch(
-                    `http://localhost:8000/pid/namespaces/${id}`,
+                    `/pid/namespaces/${id}`,
                     {
                         credentials: "include",
                     }
