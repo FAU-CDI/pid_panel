@@ -8,7 +8,7 @@ WORKDIR /app
 
 COPY frontend/package.json frontend/package-lock.json ./
 
-RUN npm ci --no-audit --no-fund
+RUN npm ci 
 
 COPY frontend/ ./
 
