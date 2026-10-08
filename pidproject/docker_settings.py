@@ -121,3 +121,25 @@ FRONTEND_URL = os.environ.get(
     "FRONTEND_URL",
     "http://localhost:8000/frontend",
 )
+
+# Turn on logging to STDERR - so that uwsgi can print it.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'ERROR',
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}
