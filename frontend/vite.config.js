@@ -10,7 +10,6 @@ export default defineConfig({
         proxy: {
             "/auth": {
                 target: "http://localhost:8000",
-                changeOrigin: true,
             },
 
             "/pid": {

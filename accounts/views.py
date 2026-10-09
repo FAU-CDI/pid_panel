@@ -24,6 +24,7 @@ if "keycloak" in settings.AUTHLIB_OAUTH_CLIENTS:
 def login(request):
 
     redirect_uri = request.build_absolute_uri("/auth/callback/")
+    print("OAuth redirect_uri:", redirect_uri)
 
     return oauth.keycloak.authorize_redirect(
         request,
@@ -44,7 +45,7 @@ def callback(request):
     required_group = settings.KEYCLOAK_ALLOWED_GROUP
 
     if required_group not in groups: 
-        return redirect( f"{settings.FRONTEND_URL}/?error=not_authorized" )
+        return redirect("/frontend/?error=not_authorized")
 
     preferred = userinfo["preferred_username"]
     email = userinfo.get("email", "")
@@ -74,11 +75,11 @@ def callback(request):
 
     django_login(request, user)
 
-    return redirect(f"{settings.FRONTEND_URL}/dashboard")
+    return redirect("/frontend/dashboard")
 
 
 def logout(request):
 
     django_logout(request)
 
-    return redirect(f"{settings.FRONTEND_URL}/")
+    return redirect("/frontend/")

@@ -117,10 +117,6 @@ STATICFILES_STORAGE = (
     "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
 )
 
-FRONTEND_URL = os.environ.get(
-    "FRONTEND_URL",
-    "http://localhost:8000/frontend",
-)
 
 # Turn on logging to STDERR - so that uwsgi can print it.
 LOGGING = {

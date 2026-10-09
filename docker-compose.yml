@@ -27,7 +27,6 @@ services:
       KEYCLOAK_CLIENT_SECRET: "${KEYCLOAK_CLIENT_SECRET}"
       KEYCLOAK_SERVER_METADATA_URL: "${KEYCLOAK_SERVER_METADATA_URL}"
       KEYCLOAK_ALLOWED_GROUP: "${KEYCLOAK_ALLOWED_GROUP}"
-      FRONTEND_URL: "http://localhost:8000/frontend"
 
     depends_on:
       - backend
