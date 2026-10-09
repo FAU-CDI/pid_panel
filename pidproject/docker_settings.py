@@ -67,6 +67,8 @@ KEYCLOAK_ALLOWED_GROUP = os.environ.get(
     "/pid-users",
 )
 
+USE_X_FORWARDED_HOST = True
+
 
 if KEYCLOAK_CLIENT_ID:
     AUTHLIB_OAUTH_CLIENTS = {
